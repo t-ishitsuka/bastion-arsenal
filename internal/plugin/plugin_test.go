@@ -134,9 +134,11 @@ func TestRegistryGet(t *testing.T) {
 	plugin, err := registry.Get("node")
 	if err != nil {
 		t.Errorf("Get(node) エラー: %v", err)
+		return
 	}
 	if plugin == nil {
 		t.Error("plugin が nil です")
+		return
 	}
 	if plugin.Name != "node" {
 		t.Errorf("plugin.Name = %q, want %q", plugin.Name, "node")
