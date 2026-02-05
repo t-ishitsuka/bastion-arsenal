@@ -36,17 +36,17 @@ func NewRootCmd() *cobra.Command {
 	}
 
 	// TODO: コマンドファイルを実装
-	// root.AddCommand(
-	// 	newInstallCmd(),
-	// 	newUseCmd(),
-	// 	newUninstallCmd(),
-	// 	newListCmd(),
-	// 	newCurrentCmd(),
-	// 	newSyncCmd(),
-	// 	newDoctorCmd(),
-	// 	newPluginCmd(),
-	// 	newInitShellCmd(),
-	// )
+	root.AddCommand(
+		// newInstallCmd(),
+		// newUseCmd(),
+		// newUninstallCmd(),
+		// newListCmd(),
+		// newCurrentCmd(),
+		// newSyncCmd(),
+		// newDoctorCmd(),
+		newPluginCmd(),
+		// newInitShellCmd(),
+	)
 
 	return root
 }
