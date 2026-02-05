@@ -10,8 +10,11 @@ import (
 func newPluginCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "plugin",
-		Short: "プラグイン管理",
-		Long:  "プラグインの一覧表示や管理を行います",
+		Short: "利用可能なツール（プラグイン）の確認",
+		Long: `Arsenal で管理できるツール（プラグイン）の一覧を表示します。
+
+各ツールは TOML ファイルで定義されており、組み込みプラグインと
+ユーザー定義プラグイン（~/.arsenal/plugins/）が利用可能です。`,
 	}
 
 	cmd.AddCommand(newPluginListCmd())

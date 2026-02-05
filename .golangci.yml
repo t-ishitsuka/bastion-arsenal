@@ -13,14 +13,8 @@ linters:
     - gosimple
     - ineffassign
     - typecheck
-  disable:
-    - structcheck
-    - varcheck
-    - deadcode
 
 linters-settings:
-  govet:
-    check-shadowing: false
   errcheck:
     check-type-assertions: false
     check-blank: false
