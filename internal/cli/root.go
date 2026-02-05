@@ -70,6 +70,7 @@ func initialize() error {
 	}
 
 	manager = version.NewManager(paths, registry)
+	_ = manager // 将来の CLI コマンドで使用予定
 	return nil
 }
 

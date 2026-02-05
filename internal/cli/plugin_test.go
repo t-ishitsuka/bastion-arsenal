@@ -24,9 +24,11 @@ func TestNewPluginCmd(t *testing.T) {
 	listCmd, _, err := cmd.Find([]string{"list"})
 	if err != nil {
 		t.Errorf("list サブコマンドが見つかりません: %v", err)
+		return
 	}
 	if listCmd == nil {
 		t.Error("list サブコマンドが nil です")
+		return
 	}
 }
 
