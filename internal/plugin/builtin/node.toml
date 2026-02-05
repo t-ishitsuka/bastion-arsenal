@@ -1,0 +1,20 @@
+name = "node"
+display_name = "Node.js"
+description = "JavaScript runtime"
+
+list_url = "https://nodejs.org/dist/index.json"
+list_format = "json"
+download_url = "https://nodejs.org/dist/v{{version}}/node-v{{version}}-{{os}}-{{arch}}.tar.gz"
+
+bin_path = "bin"
+archive_type = "tar.gz"
+version_prefix = "v"
+
+[os_map]
+darwin = "darwin"
+linux = "linux"
+windows = "win"
+
+[arch_map]
+amd64 = "x64"
+arm64 = "arm64"
