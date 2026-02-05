@@ -20,7 +20,7 @@ vendor/
 go.work
 
 # Build artifacts
-arsenal
+/arsenal
 /bin/
 /dist/
 
