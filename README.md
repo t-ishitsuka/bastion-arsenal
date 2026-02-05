@@ -1,5 +1,7 @@
 # Arsenal
 
+[![Test](https://github.com/YOUR_USERNAME/arsenal/workflows/Test/badge.svg)](https://github.com/YOUR_USERNAME/arsenal/actions)
+
 軽量マルチランタイムバージョンマネージャー。Bastion エコシステムの一部。
 
 ## 現在の状態

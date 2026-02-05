@@ -38,10 +38,12 @@ func WriteToolVersions(dir string, tv *ToolVersions) error {
 	if err != nil {
 		return err
 	}
-	defer f.Close()
+	defer func() { _ = f.Close() }()
 
 	for tool, version := range tv.Tools {
-		fmt.Fprintf(f, "%s %s\n", tool, version)
+		if _, err := fmt.Fprintf(f, "%s %s\n", tool, version); err != nil {
+			return err
+		}
 	}
 
 	return nil
@@ -115,7 +117,7 @@ func parseToolVersionsFile(path string) (*ToolVersions, error) {
 	if err != nil {
 		return nil, err
 	}
-	defer f.Close()
+	defer func() { _ = f.Close() }()
 
 	tv := &ToolVersions{
 		Tools: make(map[string]string),

@@ -57,16 +57,16 @@ func (m *Manager) Install(toolName, version string) error {
 	// ダウンロード
 	tmpFile, err := m.download(url)
 	if err != nil {
-		os.RemoveAll(installDir)
+		_ = os.RemoveAll(installDir)
 		return fmt.Errorf("ダウンロードエラー: %w", err)
 	}
-	defer os.Remove(tmpFile)
+	defer func() { _ = os.Remove(tmpFile) }()
 
 	// 展開
 	fmt.Printf("📂 展開中...\n")
 	archiveType := p.ResolveArchiveType()
 	if err := m.extract(tmpFile, installDir, archiveType); err != nil {
-		os.RemoveAll(installDir)
+		_ = os.RemoveAll(installDir)
 		return fmt.Errorf("展開エラー: %w", err)
 	}
 
@@ -74,7 +74,7 @@ func (m *Manager) Install(toolName, version string) error {
 	if len(p.PostInstall) > 0 {
 		fmt.Printf("🔧 インストール後処理を実行中...\n")
 		if err := m.runPostInstall(p, installDir); err != nil {
-			os.RemoveAll(installDir)
+			_ = os.RemoveAll(installDir)
 			return fmt.Errorf("インストール後処理エラー: %w", err)
 		}
 	}
@@ -100,7 +100,7 @@ func (m *Manager) Use(toolName, version string) error {
 
 	// 既存の symlink を削除
 	symlinkPath := m.paths.ToolCurrentPath(toolName)
-	os.Remove(symlinkPath)
+	_ = os.Remove(symlinkPath)
 
 	// 新しい symlink を作成
 	if err := os.Symlink(versionDir, symlinkPath); err != nil {
@@ -127,7 +127,7 @@ func (m *Manager) Uninstall(toolName, version string) error {
 	current, _ := m.Current(toolName)
 	if current == version {
 		// 先に symlink を削除
-		os.Remove(m.paths.ToolCurrentPath(toolName))
+		_ = os.Remove(m.paths.ToolCurrentPath(toolName))
 	}
 
 	if err := os.RemoveAll(versionDir); err != nil {
@@ -265,7 +265,7 @@ func (m *Manager) download(url string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
 	if resp.StatusCode != http.StatusOK {
 		return "", fmt.Errorf("HTTP %d: %s", resp.StatusCode, resp.Status)
@@ -275,10 +275,10 @@ func (m *Manager) download(url string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	defer tmpFile.Close()
+	defer func() { _ = tmpFile.Close() }()
 
 	if _, err := io.Copy(tmpFile, resp.Body); err != nil {
-		os.Remove(tmpFile.Name())
+		_ = os.Remove(tmpFile.Name())
 		return "", err
 	}
 
@@ -304,13 +304,13 @@ func (m *Manager) extractTarGz(archivePath, targetDir string) error {
 	if err != nil {
 		return err
 	}
-	defer f.Close()
+	defer func() { _ = f.Close() }()
 
 	gzr, err := gzip.NewReader(f)
 	if err != nil {
 		return err
 	}
-	defer gzr.Close()
+	defer func() { _ = gzr.Close() }()
 
 	tr := tar.NewReader(gzr)
 
@@ -356,12 +356,14 @@ func (m *Manager) extractTarGz(archivePath, targetDir string) error {
 				return err
 			}
 			if _, err := io.Copy(outFile, tr); err != nil {
-				outFile.Close()
+				_ = outFile.Close()
 				return err
 			}
-			outFile.Close()
+			if err := outFile.Close(); err != nil {
+				return err
+			}
 		case tar.TypeSymlink:
-			os.Remove(target)
+			_ = os.Remove(target)
 			if err := os.Symlink(header.Linkname, target); err != nil {
 				return err
 			}
@@ -376,13 +378,13 @@ func (m *Manager) extractZip(archivePath, targetDir string) error {
 	if err != nil {
 		return err
 	}
-	defer r.Close()
+	defer func() { _ = r.Close() }()
 
 	for _, f := range r.File {
 		target := filepath.Join(targetDir, f.Name)
 
 		if f.FileInfo().IsDir() {
-			os.MkdirAll(target, 0755)
+			_ = os.MkdirAll(target, 0755)
 			continue
 		}
 
@@ -397,13 +399,15 @@ func (m *Manager) extractZip(archivePath, targetDir string) error {
 
 		rc, err := f.Open()
 		if err != nil {
-			outFile.Close()
+			_ = outFile.Close()
 			return err
 		}
 
 		_, err = io.Copy(outFile, rc)
-		rc.Close()
-		outFile.Close()
+		_ = rc.Close()
+		if closeErr := outFile.Close(); closeErr != nil && err == nil {
+			err = closeErr
+		}
 		if err != nil {
 			return err
 		}

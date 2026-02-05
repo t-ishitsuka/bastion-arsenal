@@ -5,6 +5,8 @@
 - Go 標準のフォーマット (`gofmt`)
 - エラーは `fmt.Errorf("context: %w", err)` でラップ
 - パッケージ間の依存は一方向: `cli → version → plugin → config`
+- **コードを変更したら必ず linter を実行する**: `golangci-lint run ./...`
+- エラーハンドリングは省略しない（特に `Close()`, `Remove()` などのクリーンアップ処理）
 
 ## テスト
 

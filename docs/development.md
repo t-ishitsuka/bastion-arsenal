@@ -68,3 +68,36 @@ go build -gcflags="all=-N -l" -o arsenal ./cmd/arsenal
 1. `internal/plugin/builtin/` に TOML ファイルを作成（例: `ruby.toml`）
 2. プラグイン定義を記述
 3. ビルドすると自動的に `go:embed` で組み込まれる
+
+## CI/CD
+
+### GitHub Actions
+
+プルリクエスト作成時、自動的に以下が実行されます：
+
+- **Test**: 全テストを実行（カバレッジ 50% 以上必須）
+- **Lint**: golangci-lint でコード品質チェック
+- **Build**: ビルドが成功するか確認
+
+### ローカルで CI と同じチェックを実行
+
+```bash
+# テスト（カバレッジ付き）
+go test -v -race -coverprofile=coverage.out ./...
+go tool cover -func=coverage.out
+
+# カバレッジを HTML で表示
+go tool cover -html=coverage.out -o coverage.html
+
+# Lint
+golangci-lint run ./...
+
+# ビルド
+make build
+```
+
+### カバレッジ要件
+
+- 総カバレッジ: 最低 25%（目標: 50% 以上）
+- 新規コードはテストを含めること（コーディング規約参照）
+- CLI コマンド実装時はテストも同時に作成
