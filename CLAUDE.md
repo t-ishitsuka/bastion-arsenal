@@ -113,6 +113,7 @@ bastion init
 実装済み:
 - `install.go` - arsenal install コマンド [実装済み]
 - `use.go` - arsenal use コマンド [実装済み]
+- `uninstall.go` - arsenal uninstall コマンド [実装済み]
 - `lsremote.go` - arsenal ls-remote コマンド [実装済み]
 - `plugin.go` - arsenal plugin list コマンド [実装済み]
 - `current.go` - arsenal current コマンド [実装済み]
@@ -123,7 +124,6 @@ bastion init
 
 #### CLI コマンド (internal/cli/)
 以下のコマンドファイルが未実装（現在は root.go でコメントアウト）:
-- `uninstall.go` - arsenal uninstall コマンド
 - `sync.go` - arsenal sync コマンド
 - `initshell.go` - arsenal init-shell コマンド
 
@@ -154,7 +154,7 @@ bastion init
 
 ### テスト・CI/CD
 
-- **テストカバレッジ**: 全体 37%+ (CLI: 67.9%, config: 84.6%, plugin: 66.1%)
+- **テストカバレッジ**: 全体 39%+ (CLI: 71.1%, config: 84.6%, plugin: 66.1%)
 - **GitHub Actions**: PR/push 時に自動テスト・lint・ビルド実行
 - **golangci-lint**: errcheck, staticcheck, unused など標準リンター有効化
 - **カバレッジ目標**: 最低 25%、目標 50%
@@ -166,7 +166,7 @@ bastion init
 | `arsenal install <tool> <version>` | バージョンをインストール | [実装済み] |
 | `arsenal use <tool> <version>` | バージョン切り替え (symlink) | [実装済み] |
 | `arsenal use <tool> <version> --local` | 切り替え + .toolversions に書き込み | [実装済み] |
-| `arsenal uninstall <tool> <version>` | バージョン削除 | [ロジック実装済み] CLI未実装 |
+| `arsenal uninstall <tool> <version>` | バージョン削除 | [実装済み] |
 | `arsenal ls <tool>` | インストール済みバージョン一覧 | [実装済み] |
 | `arsenal ls-remote <tool>` | リモートの利用可能バージョン取得 | [実装済み] |
 | `arsenal current` | 全ツールのアクティブバージョン表示 | [実装済み] |
@@ -191,7 +191,7 @@ bastion init
 
 ### 優先度高
 
-1. **残りの CLI コマンドファイル実装** - uninstall.go, sync.go, initshell.go
+1. **残りの CLI コマンドファイル実装** - sync.go, initshell.go
    - 既存の Manager メソッドを呼び出すだけ
    - Cobra のフラグ定義とバリデーション
    - 各コマンドのテスト実装

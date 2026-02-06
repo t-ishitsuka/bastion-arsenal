@@ -101,7 +101,7 @@ func NewRootCmd() *cobra.Command {
 	root.AddCommand(
 		newInstallCmd(),
 		newUseCmd(),
-		// newUninstallCmd(),
+		newUninstallCmd(),
 		newListCmd(),
 		newLsRemoteCmd(),
 		newCurrentCmd(),
