@@ -47,12 +47,15 @@ Bastion エコシステムの一部として、Claude Code マルチエージェ
 
 | カテゴリ                               | 状態       |
 | -------------------------------------- | ---------- |
-| CLI コマンド（10種類）                 | [実装済み] |
+| CLI コマンド（11種類）                 | [実装済み] |
 | バージョン管理ロジック                 | [実装済み] |
 | .toolversions パーサー                 | [実装済み] |
 | シェル統合（bash/zsh/fish）            | [実装済み] |
 | プラグインシステム                     | [実装済み] |
 | ターミナルUI（カラー・プログレスバー） | [実装済み] |
+| プリビルドバイナリ配布                 | [実装済み] |
+| GitHub Actions リリース自動化          | [実装済み] |
+| インストールスクリプト                 | [実装済み] |
 | テスト（カバレッジ73%+）               | [実装済み] |
 
 ### 対応ツール
@@ -65,11 +68,26 @@ Bastion エコシステムの一部として、Claude Code マルチエージェ
 | Rust    | rust.toml      | 未実装     |
 | PHP     | php.toml       | 未実装     |
 
+### リリース配布
+
+| プラットフォーム | アーキテクチャ | 配布形式 | 状態       |
+| ---------------- | -------------- | -------- | ---------- |
+| Linux            | amd64          | tar.gz   | [実装済み] |
+| Linux            | arm64          | tar.gz   | [実装済み] |
+| macOS            | amd64          | tar.gz   | [実装済み] |
+| macOS            | arm64          | tar.gz   | [実装済み] |
+| Windows          | amd64          | zip      | [実装済み] |
+| Windows          | arm64          | zip      | [実装済み] |
+
+GitHub Releases で自動配布。main ブランチへのプッシュで自動リリース。
+
 ### TODO（優先度順）
 
 1. **追加プラグイン定義** - go.toml, python.toml, rust.toml, php.toml
 2. **post_install 実行** - Python/Rust/PHP のビルド処理
 3. **エラーハンドリング強化** - ネットワークエラーのリトライ等
+4. **パッケージマネージャ対応** - Homebrew, Scoop
+5. **自動アップデート機能** - `bastion-arsenal update`
 
 ---
 
@@ -118,6 +136,9 @@ arsenal/
 | `doctor`                         | 環境ヘルスチェック                                     | [実装済み] |
 | `plugin list`                    | 対応ツール一覧                                         | [実装済み] |
 | `init-shell [bash\|zsh\|fish]`   | シェル設定スクリプト出力                               | [実装済み] |
+| `version`                        | バージョン情報を表示                                   | [実装済み] |
+
+注: バイナリ名は `bastion-arsenal`
 
 ---
 
@@ -178,5 +199,5 @@ BASTION（司令塔）
 
 ```
 bastion init
-  └─→ arsenal sync  # .toolversions からランタイム整備
+  └─→ bastion-arsenal sync  # .toolversions からランタイム整備
 ```

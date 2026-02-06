@@ -21,8 +21,12 @@ go.work
 
 # Build artifacts
 /arsenal
+/bastion-arsenal
 /bin/
 /dist/
+*.tar.gz
+*.zip
+SHA256SUMS
 
 # IDE
 .vscode/

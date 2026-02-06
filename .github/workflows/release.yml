@@ -1,0 +1,207 @@
+name: Release
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  version:
+    name: Determine version
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+      tag: ${{ steps.version.outputs.tag }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Determine version
+        id: version
+        run: |
+          # Get latest tag
+          LATEST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "v0.0.0")
+          echo "Latest tag: $LATEST_TAG"
+
+          # Extract version components
+          VERSION=${LATEST_TAG#v}
+          IFS='.' read -r MAJOR MINOR PATCH <<< "$VERSION"
+
+          # Increment patch version
+          PATCH=$((PATCH + 1))
+          NEW_VERSION="v${MAJOR}.${MINOR}.${PATCH}"
+
+          echo "New version: $NEW_VERSION"
+          echo "version=${MAJOR}.${MINOR}.${PATCH}" >> $GITHUB_OUTPUT
+          echo "tag=$NEW_VERSION" >> $GITHUB_OUTPUT
+
+  build-and-release:
+    name: Build and release
+    needs: version
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        include:
+          - goos: linux
+            goarch: amd64
+            archive: tar.gz
+          - goos: linux
+            goarch: arm64
+            archive: tar.gz
+          - goos: darwin
+            goarch: amd64
+            archive: tar.gz
+          - goos: darwin
+            goarch: arm64
+            archive: tar.gz
+          - goos: windows
+            goarch: amd64
+            archive: zip
+            ext: .exe
+          - goos: windows
+            goarch: arm64
+            archive: zip
+            ext: .exe
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: "1.22"
+
+      - name: Build binary
+        env:
+          GOOS: ${{ matrix.goos }}
+          GOARCH: ${{ matrix.goarch }}
+          VERSION: ${{ needs.version.outputs.version }}
+          COMMIT: ${{ github.sha }}
+          BUILD_DATE: ${{ github.event.head_commit.timestamp }}
+        run: |
+          BINARY_NAME="bastion-arsenal-${{ matrix.goos }}-${{ matrix.goarch }}${{ matrix.ext }}"
+          LDFLAGS="-X main.Version=${VERSION} -X main.Commit=${COMMIT:0:7} -X main.BuildDate=${BUILD_DATE}"
+
+          go build -ldflags "$LDFLAGS" -o "$BINARY_NAME" ./cmd/arsenal
+
+          echo "BINARY_NAME=$BINARY_NAME" >> $GITHUB_ENV
+
+      - name: Create archive (tar.gz)
+        if: matrix.archive == 'tar.gz'
+        run: |
+          ARCHIVE_NAME="bastion-arsenal-${{ needs.version.outputs.tag }}-${{ matrix.goos }}-${{ matrix.goarch }}.tar.gz"
+          tar czf "$ARCHIVE_NAME" "$BINARY_NAME"
+          echo "ARCHIVE_NAME=$ARCHIVE_NAME" >> $GITHUB_ENV
+
+      - name: Create archive (zip)
+        if: matrix.archive == 'zip'
+        run: |
+          ARCHIVE_NAME="bastion-arsenal-${{ needs.version.outputs.tag }}-${{ matrix.goos }}-${{ matrix.goarch }}.zip"
+          zip "$ARCHIVE_NAME" "$BINARY_NAME"
+          echo "ARCHIVE_NAME=$ARCHIVE_NAME" >> $GITHUB_ENV
+
+      - name: Generate checksum
+        run: |
+          sha256sum "$ARCHIVE_NAME" > "$ARCHIVE_NAME.sha256"
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ env.ARCHIVE_NAME }}
+          path: |
+            ${{ env.ARCHIVE_NAME }}
+            ${{ env.ARCHIVE_NAME }}.sha256
+
+  create-release:
+    name: Create GitHub Release
+    needs: [version, build-and-release]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+
+      - name: Move artifacts to release directory
+        run: |
+          mkdir -p release
+          find artifacts -type f -exec mv {} release/ \;
+          ls -lh release/
+
+      - name: Create consolidated SHA256SUMS
+        run: |
+          cd release
+          cat *.sha256 > SHA256SUMS
+          rm *.sha256
+
+      - name: Generate release notes
+        id: release_notes
+        run: |
+          LATEST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
+
+          if [ -z "$LATEST_TAG" ]; then
+            # First release
+            cat > release_notes.md << 'EOF'
+          Initial release of Arsenal - 軽量マルチランタイムバージョンマネージャー
+
+          ## インストール
+
+          ### Linux / macOS
+          ```bash
+          curl -fsSL https://raw.githubusercontent.com/${{ github.repository }}/main/scripts/install.sh | bash
+          ```
+
+          ### Windows (PowerShell)
+          ```powershell
+          iwr -useb https://raw.githubusercontent.com/${{ github.repository }}/main/scripts/install.ps1 | iex
+          ```
+
+          ## 変更内容
+
+          初回リリース
+          EOF
+          else
+            # Subsequent releases
+            cat > release_notes.md << EOF
+          ## インストール
+
+          ### Linux / macOS
+          \`\`\`bash
+          curl -fsSL https://raw.githubusercontent.com/${{ github.repository }}/main/scripts/install.sh | bash
+          \`\`\`
+
+          ### Windows (PowerShell)
+          \`\`\`powershell
+          iwr -useb https://raw.githubusercontent.com/${{ github.repository }}/main/scripts/install.ps1 | iex
+          \`\`\`
+
+          ## 変更内容
+
+          $(git log ${LATEST_TAG}..HEAD --pretty=format:'- %s (%h)' --no-merges)
+          EOF
+          fi
+
+          cat release_notes.md
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: ${{ needs.version.outputs.tag }}
+          name: Arsenal ${{ needs.version.outputs.tag }}
+          body_path: release_notes.md
+          draft: false
+          prerelease: false
+          files: release/*
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
