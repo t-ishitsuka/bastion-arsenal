@@ -45,21 +45,23 @@ node --version
 ## 主要機能
 
 - **バージョン管理**: install/use/uninstall/ls コマンドで簡単管理
-- **プロジェクト同期**: .toolversions から一括セットアップ（`arsenal sync`）
+- **プロジェクト同期**: .toolversions から一括セットアップ（`bastion-arsenal sync`）
+- **自動更新**: GitHub Releases から最新版に自動更新（`bastion-arsenal self update`）
 - **シェル統合**: bash/zsh/fish 対応
 - **リッチUI**: カラー出力、プログレスバー、LTSフィルタリング
 - **プラグインシステム**: TOML で簡単にツールを追加可能
 
 ## 基本コマンド
 
-| コマンド                                   | 説明                     |
-| ------------------------------------------ | ------------------------ |
-| `bastion-arsenal install <tool> <version>` | バージョンをインストール |
-| `bastion-arsenal use <tool> <version>`     | バージョン切り替え       |
-| `bastion-arsenal ls-remote <tool>`         | リモートのバージョン一覧 |
-| `bastion-arsenal sync`                     | .toolversions から同期   |
-| `bastion-arsenal doctor`                   | 環境チェック             |
-| `bastion-arsenal version`                  | バージョン情報を表示     |
+| コマンド                                   | 説明                      |
+| ------------------------------------------ | ------------------------- |
+| `bastion-arsenal install <tool> <version>` | バージョンをインストール  |
+| `bastion-arsenal use <tool> <version>`     | バージョン切り替え        |
+| `bastion-arsenal ls-remote <tool>`         | リモートのバージョン一覧  |
+| `bastion-arsenal sync`                     | .toolversions から同期    |
+| `bastion-arsenal self update`              | Arsenal を最新版に更新    |
+| `bastion-arsenal doctor`                   | 環境チェック              |
+| `bastion-arsenal version`                  | バージョン情報を表示      |
 
 詳細は `bastion-arsenal --help` を参照。
 

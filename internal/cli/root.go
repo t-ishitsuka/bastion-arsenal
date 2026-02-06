@@ -120,6 +120,7 @@ func NewRootCmd() *cobra.Command {
 		newPluginCmd(),
 		newInitShellCmd(),
 		newVersionCmd(),
+		newSelfCmd(),
 	)
 
 	return root
