@@ -10,20 +10,21 @@
 
 ### 実装済み
 - コアバージョン管理ロジック (install/use/uninstall/list/current/sync/doctor)
-- CLI コマンド: `install`, `ls-remote`, `plugin list`, `current`, `ls`, `doctor`
+- CLI コマンド: `install`, `use`, `ls-remote`, `plugin list`, `current`, `ls`, `doctor`
 - go:embed を使ったプラグインシステム
 - .toolversions パーサー
 - Node.js プラグイン定義 (node.toml)
 - パス管理とディレクトリ構造
 - symlink ベースのバージョン切り替え
 - GitHub Actions による自動テスト・lint・ビルド
-- テストカバレッジ: 37%+ (CLI: 71.3%)
+- テストカバレッジ: 37%+ (CLI: 67.9%)
 
 ### TODO
-- CLI コマンド実装 (use.go, uninstall.go, sync.go, initshell.go)
+- CLI コマンド実装 (uninstall.go, sync.go, initshell.go)
 - 追加プラグイン定義 (go.toml, python.toml, rust.toml, php.toml)
 - シェル統合 (init-shell コマンド)
 - post-install コマンド実行
+- ls-remote --lts-only フラグ
 
 ## インストール
 
@@ -50,6 +51,10 @@ arsenal ls-remote node --limit 50
 # ツールのバージョンをインストール
 arsenal install node 20.10.0
 
+# バージョンを切り替え
+arsenal use node 20.10.0
+arsenal use go 1.22.0 --local   # .toolversions に書き込み
+
 # 環境ヘルスチェック
 arsenal doctor
 
@@ -66,10 +71,6 @@ arsenal ls node
 ### 未実装（実装予定）
 
 ```bash
-# バージョンを切り替え
-arsenal use node 20.10.0
-arsenal use go 1.22.0 --local   # .toolversions に書き込み
-
 # バージョンをアンインストール
 arsenal uninstall node 18.0.0
 
