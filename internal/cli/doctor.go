@@ -3,9 +3,9 @@ package cli
 import (
 	"fmt"
 
+	"github.com/arsenal/internal/terminal"
 	"github.com/arsenal/internal/version"
 	"github.com/spf13/cobra"
-	"github.com/arsenal/internal/terminal"
 )
 
 func newDoctorCmd() *cobra.Command {
