@@ -1,115 +1,50 @@
 # Arsenal
 
-[![Test](https://github.com/YOUR_USERNAME/arsenal/workflows/Test/badge.svg)](https://github.com/YOUR_USERNAME/arsenal/actions)
+[![Test](https://github.com/t-ishitsuka/arsenal/workflows/Test/badge.svg)](https://github.com/t-ishitsuka/arsenal/actions)
 
-軽量マルチランタイムバージョンマネージャー。Bastion エコシステムの一部。
+軽量マルチランタイムバージョンマネージャー。asdf/mise に依存せず、シンプルで軽量な独自実装を目指す。Bastion エコシステムの一部として、開発環境の統一管理を実現。
 
-## 現在の状態
-
-**基本機能完成** - 全ての基本 CLI コマンドが実装済み。
-
-### 実装済み
-- コアバージョン管理ロジック (install/use/uninstall/list/current/sync/doctor)
-- CLI コマンド（全10種類）: `install`, `use`, `uninstall`, `ls-remote`, `plugin list`, `current`, `ls`, `sync`, `doctor`, `init-shell`
-- 現在使用中のバージョンをアンインストールすると自動的に最新版に切り替え
-- LTS バージョンのフィルタリング（--lts-only フラグ）
-- プログレスバー付きダウンロード（Content-Length、同じ行を上書き更新）
-- ターミナルカラー対応（ANSI エスケープコード、NO_COLOR 環境変数対応）
-- シェル統合（bash/zsh/fish 対応）
-- go:embed を使ったプラグインシステム
-- .toolversions パーサー
-- Node.js プラグイン定義 (node.toml)
-- パス管理とディレクトリ構造
-- symlink ベースのバージョン切り替え
-- GitHub Actions による自動テスト・lint・ビルド
-- テストカバレッジ: 41%+ (CLI: 67.7%) - 目標50%達成
-
-### TODO
-- 追加プラグイン定義 (go.toml, python.toml, rust.toml, php.toml)
-- post-install コマンド実行
-- エラーハンドリング強化（リトライ等）
-
-## インストール
+## クイックスタート
 
 ```bash
+# インストール
 go install github.com/arsenal/cmd/arsenal@latest
-```
 
-## シェル設定
-
-```bash
-# Bash の場合 (~/.bashrc に追加)
+# シェル設定
 arsenal init-shell bash >> ~/.bashrc
+source ~/.bashrc
 
-# Zsh の場合 (~/.zshrc に追加)
-arsenal init-shell zsh >> ~/.zshrc
-
-# Fish の場合 (~/.config/fish/config.fish に追加)
-arsenal init-shell fish >> ~/.config/fish/config.fish
-```
-
-## 使用方法
-
-### 実装済みコマンド
-
-```bash
-# リモートから利用可能なバージョンを確認
-arsenal ls-remote node
-arsenal ls-remote node --limit 50
-arsenal ls-remote node --lts-only  # LTS バージョンのみ表示
-
-# ツールのバージョンをインストール
+# Node.js をインストール
 arsenal install node 20.10.0
-
-# バージョンを切り替え
 arsenal use node 20.10.0
-arsenal use go 1.22.0 --local   # .toolversions に書き込み
 
-# バージョンをアンインストール
-arsenal uninstall node 18.0.0
-
-# .toolversions から同期
-arsenal sync
-
-# 環境ヘルスチェック
-arsenal doctor
-
-# 利用可能なツール一覧
-arsenal plugin list
-
-# アクティブバージョンを表示
-arsenal current
-
-# インストール済みバージョン一覧
-arsenal ls node
+# 確認
+node --version
 ```
 
-## .toolversions フォーマット
+## 主要機能
 
-```
-# プロジェクトのツール要件
-node 20.10.0
-go 1.22.0
-python 3.12.0
-```
+- **バージョン管理**: install/use/uninstall/ls コマンドで簡単管理
+- **プロジェクト同期**: .toolversions から一括セットアップ（`arsenal sync`）
+- **シェル統合**: bash/zsh/fish 対応
+- **リッチUI**: カラー出力、プログレスバー、LTSフィルタリング
+- **プラグインシステム**: TOML で簡単にツールを追加可能
 
-## Bastion 連携
+## 基本コマンド
 
-Arsenal は `bastion init` 時に呼び出される `sync` と `doctor` を提供:
+| コマンド                           | 説明                     |
+| ---------------------------------- | ------------------------ |
+| `arsenal install <tool> <version>` | バージョンをインストール |
+| `arsenal use <tool> <version>`     | バージョン切り替え       |
+| `arsenal ls-remote <tool>`         | リモートのバージョン一覧 |
+| `arsenal sync`                     | .toolversions から同期   |
+| `arsenal doctor`                   | 環境チェック             |
 
-```yaml
-# .bastion.yaml
-environment:
-  runtime:
-    node: "20.10.0"
-    go: "1.22.0"
-```
-
-```
-bastion init → arsenal sync → 全ツール準備完了
-```
+詳細は `arsenal --help` を参照。
 
 ## アーキテクチャ
+
+symlink 方式で高速にバージョンを切り替え（shims 不使用）。
 
 ```
 ~/.arsenal/
@@ -122,15 +57,48 @@ bastion init → arsenal sync → 全ツール準備完了
 └── plugins/         # カスタムツール定義 (TOML)
 ```
 
-## 対応予定ツール
+PATH に `~/.arsenal/current/*/bin` を追加するだけで動作。
 
-| ツール   | 状態 |
-|---------|------|
-| Node.js | プラグイン定義実装済み |
-| Go      | プラグイン定義 TODO |
-| Python  | プラグイン定義 TODO |
-| Rust    | プラグイン定義 TODO |
-| PHP     | プラグイン定義 TODO |
+## .toolversions
+
+プロジェクトルートに配置して `arsenal sync` で一括セットアップ。
+
+```
+# プロジェクトのツール要件
+node 20.10.0
+go 1.22.0
+python 3.12.0
+```
+
+## Bastion 連携
+
+Arsenal は Bastion 初期化時に自動実行され、開発環境を整備。
+
+```
+bastion init
+  └─→ arsenal sync  # .toolversions から自動セットアップ
+```
+
+## 対応ツール
+
+| ツール  | 状態     |
+| ------- | -------- |
+| Node.js | 対応済み |
+| Go      | 準備中   |
+| Python  | 準備中   |
+| Rust    | 準備中   |
+
+## 開発
+
+```bash
+# ビルド
+make build
+
+# テスト
+make test
+
+# カバレッジ: 73%+ (目標50%達成)
+```
 
 ## ライセンス
 
