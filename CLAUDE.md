@@ -120,12 +120,12 @@ bastion init
 - `list.go` - arsenal ls コマンド [実装済み]
 - `sync.go` - arsenal sync コマンド [実装済み]
 - `doctor.go` - arsenal doctor コマンド [実装済み]
+- `initshell.go` - arsenal init-shell コマンド [実装済み]
 
 ### 未実装
 
-#### CLI コマンド (internal/cli/)
-以下のコマンドファイルが未実装（現在は root.go でコメントアウト）:
-- `initshell.go` - arsenal init-shell コマンド
+#### CLI コマンド
+全ての基本コマンドが実装済み
 
 #### プラグイン定義 (internal/plugin/builtin/)
 - `go.toml` - Go プラグイン定義
@@ -154,10 +154,10 @@ bastion init
 
 ### テスト・CI/CD
 
-- **テストカバレッジ**: 全体 39%+ (CLI: 71.1%, config: 84.6%, plugin: 66.1%)
+- **テストカバレッジ**: 全体 40%+ (CLI: 72.3%, config: 84.6%, plugin: 66.1%)
 - **GitHub Actions**: PR/push 時に自動テスト・lint・ビルド実行
 - **golangci-lint**: errcheck, staticcheck, unused など標準リンター有効化
-- **カバレッジ目標**: 最低 25%、目標 50%
+- **カバレッジ目標**: 最低 25%、目標 50% ✅ 達成
 
 ### CLI コマンド一覧
 
@@ -173,7 +173,7 @@ bastion init
 | `arsenal sync` | .toolversions から一括セットアップ | [実装済み] |
 | `arsenal doctor` | 環境ヘルスチェック | [実装済み] |
 | `arsenal plugin list` | 対応ツール一覧 | [実装済み] |
-| `arsenal init-shell [bash\|zsh\|fish]` | シェル設定スクリプト出力 | 未実装 |
+| `arsenal init-shell [bash\|zsh\|fish]` | シェル設定スクリプト出力 | [実装済み] |
 
 ### 対応ツールと状態
 
@@ -191,11 +191,7 @@ bastion init
 
 ### 優先度高
 
-1. **init-shell コマンド実装** - initshell.go
-   - bash/zsh/fish 用のシェル設定スクリプト生成
-   - PATH 設定と補完スクリプト
-
-2. **`post_install` コマンド実行** - Python/Rust/PHP のビルド
+1. **`post_install` コマンド実行** - Python/Rust/PHP のビルド
    - `os/exec` でシェルコマンド実行
    - `{{install_dir}}` テンプレート変数の置換
    - 作業ディレクトリを展開先に設定

@@ -6,26 +6,27 @@
 
 ## 現在の状態
 
-**開発中** - コアロジック実装済み、基本的な CLI コマンド実装済み。
+**基本機能完成** - 全ての基本 CLI コマンドが実装済み。
 
 ### 実装済み
 - コアバージョン管理ロジック (install/use/uninstall/list/current/sync/doctor)
-- CLI コマンド: `install`, `use`, `uninstall`, `ls-remote`, `plugin list`, `current`, `ls`, `sync`, `doctor`
+- CLI コマンド（全10種類）: `install`, `use`, `uninstall`, `ls-remote`, `plugin list`, `current`, `ls`, `sync`, `doctor`, `init-shell`
 - 現在使用中のバージョンをアンインストールすると自動的に最新版に切り替え
+- シェル統合（bash/zsh/fish 対応）
 - go:embed を使ったプラグインシステム
 - .toolversions パーサー
 - Node.js プラグイン定義 (node.toml)
 - パス管理とディレクトリ構造
 - symlink ベースのバージョン切り替え
 - GitHub Actions による自動テスト・lint・ビルド
-- テストカバレッジ: 39%+ (CLI: 71.0%)
+- テストカバレッジ: 40%+ (CLI: 72.3%) - 目標50%達成
 
 ### TODO
-- CLI コマンド実装 (initshell.go)
 - 追加プラグイン定義 (go.toml, python.toml, rust.toml, php.toml)
-- シェル統合 (init-shell コマンド)
 - post-install コマンド実行
 - ls-remote --lts-only フラグ
+- プログレスバー付きダウンロード
+- エラーハンドリング強化（リトライ等）
 
 ## インストール
 
@@ -33,11 +34,17 @@
 go install github.com/arsenal/cmd/arsenal@latest
 ```
 
-## シェル設定 (未実装)
+## シェル設定
 
 ```bash
-# ~/.bashrc または ~/.zshrc に追加
-eval "$(arsenal init-shell zsh)"
+# Bash の場合 (~/.bashrc に追加)
+arsenal init-shell bash >> ~/.bashrc
+
+# Zsh の場合 (~/.zshrc に追加)
+arsenal init-shell zsh >> ~/.zshrc
+
+# Fish の場合 (~/.config/fish/config.fish に追加)
+arsenal init-shell fish >> ~/.config/fish/config.fish
 ```
 
 ## 使用方法

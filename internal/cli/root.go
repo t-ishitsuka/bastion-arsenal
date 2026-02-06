@@ -97,7 +97,6 @@ func NewRootCmd() *cobra.Command {
 		},
 	})
 
-	// TODO: コマンドファイルを実装
 	root.AddCommand(
 		newInstallCmd(),
 		newUseCmd(),
@@ -108,7 +107,7 @@ func NewRootCmd() *cobra.Command {
 		newSyncCmd(),
 		newDoctorCmd(),
 		newPluginCmd(),
-		// newInitShellCmd(),
+		newInitShellCmd(),
 	)
 
 	return root
