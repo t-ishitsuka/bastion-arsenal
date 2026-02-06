@@ -12,6 +12,7 @@
 - コアバージョン管理ロジック (install/use/uninstall/list/current/sync/doctor)
 - CLI コマンド（全10種類）: `install`, `use`, `uninstall`, `ls-remote`, `plugin list`, `current`, `ls`, `sync`, `doctor`, `init-shell`
 - 現在使用中のバージョンをアンインストールすると自動的に最新版に切り替え
+- LTS バージョンのフィルタリング（--lts-only フラグ）
 - シェル統合（bash/zsh/fish 対応）
 - go:embed を使ったプラグインシステム
 - .toolversions パーサー
@@ -19,12 +20,11 @@
 - パス管理とディレクトリ構造
 - symlink ベースのバージョン切り替え
 - GitHub Actions による自動テスト・lint・ビルド
-- テストカバレッジ: 40%+ (CLI: 72.3%) - 目標50%達成
+- テストカバレッジ: 41%+ (CLI: 73.3%) - 目標50%達成
 
 ### TODO
 - 追加プラグイン定義 (go.toml, python.toml, rust.toml, php.toml)
 - post-install コマンド実行
-- ls-remote --lts-only フラグ
 - プログレスバー付きダウンロード
 - エラーハンドリング強化（リトライ等）
 
@@ -55,6 +55,7 @@ arsenal init-shell fish >> ~/.config/fish/config.fish
 # リモートから利用可能なバージョンを確認
 arsenal ls-remote node
 arsenal ls-remote node --limit 50
+arsenal ls-remote node --lts-only  # LTS バージョンのみ表示
 
 # ツールのバージョンをインストール
 arsenal install node 20.10.0

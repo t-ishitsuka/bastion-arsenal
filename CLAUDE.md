@@ -154,7 +154,7 @@ bastion init
 
 ### テスト・CI/CD
 
-- **テストカバレッジ**: 全体 40%+ (CLI: 72.3%, config: 84.6%, plugin: 66.1%)
+- **テストカバレッジ**: 全体 41%+ (CLI: 73.3%, config: 84.6%, plugin: 66.1%)
 - **GitHub Actions**: PR/push 時に自動テスト・lint・ビルド実行
 - **golangci-lint**: errcheck, staticcheck, unused など標準リンター有効化
 - **カバレッジ目標**: 最低 25%、目標 50% ✅ 達成
@@ -203,11 +203,10 @@ bastion init
 ### 優先度中
 
 5. **追加プラグイン定義** - go.toml, python.toml, rust.toml, php.toml
-6. **`ls-remote --lts-only` フラグ** - LTS バージョンのみ表示
-7. **`--output=json` フラグ** - Bastion 連携用
-8. **tar.xz 展開サポート** - Python ソース配布用
-9. **エラーハンドリング強化** - ネットワークエラーのリトライ等
-10. **バージョンのエイリアス** - `arsenal use node lts` 等
+6. **`--output=json` フラグ** - Bastion 連携用
+7. **tar.xz 展開サポート** - Python ソース配布用
+8. **エラーハンドリング強化** - ネットワークエラーのリトライ等
+9. **バージョンのエイリアス** - `arsenal use node lts` 等
 
 ### 優先度低
 
