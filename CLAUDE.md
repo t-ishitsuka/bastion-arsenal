@@ -121,6 +121,11 @@ bastion init
 - `sync.go` - arsenal sync コマンド [実装済み]
 - `doctor.go` - arsenal doctor コマンド [実装済み]
 - `initshell.go` - arsenal init-shell コマンド [実装済み]
+- `color.go` - ターミナルカラー対応（ANSI エスケープコード、NO_COLOR 環境変数対応） [実装済み]
+
+#### ダウンロード機能 (internal/version/)
+- プログレスバー付きダウンロード（Content-Length、io.TeeReader、同じ行を上書き更新） [実装済み]
+- ターミナルカラー対応（シアン: 進捗中、緑: 完了） [実装済み]
 
 ### 未実装
 
@@ -135,7 +140,6 @@ bastion init
 
 #### その他機能
 - post_install 実行機能 - Python/Rust/PHP のビルド処理
-- プログレスバー付きダウンロード
 
 ---
 
@@ -194,20 +198,16 @@ bastion init
    - `{{install_dir}}` テンプレート変数の置換
    - 作業ディレクトリを展開先に設定
 
-4. **プログレスバー付きダウンロード**
-   - `Content-Length` から総サイズ取得
-   - `io.TeeReader` でプログレス表示
-
 ### 優先度中
 
-5. **追加プラグイン定義** - go.toml, python.toml, rust.toml, php.toml
-6. **`--output=json` フラグ** - Bastion 連携用
-7. **tar.xz 展開サポート** - Python ソース配布用
-8. **エラーハンドリング強化** - ネットワークエラーのリトライ等
-9. **バージョンのエイリアス** - `arsenal use node lts` 等
+2. **追加プラグイン定義** - go.toml, python.toml, rust.toml, php.toml
+3. **`--output=json` フラグ** - Bastion 連携用
+4. **tar.xz 展開サポート** - Python ソース配布用
+5. **エラーハンドリング強化** - ネットワークエラーのリトライ等
+6. **バージョンのエイリアス** - `arsenal use node lts` 等
 
 ### 優先度低
 
-10. **自動バージョン切り替え** - `cd` 時に .toolversions を検知して自動 sync
-11. **アップデートチェック** - 新しいバージョンの通知
-12. **キャッシュ** - ダウンロード済みアーカイブの再利用
+7. **自動バージョン切り替え** - `cd` 時に .toolversions を検知して自動 sync
+8. **アップデートチェック** - 新しいバージョンの通知
+9. **キャッシュ** - ダウンロード済みアーカイブの再利用

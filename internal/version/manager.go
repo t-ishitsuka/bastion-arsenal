@@ -12,6 +12,8 @@ import (
 	"path/filepath"
 	"sort"
 	"strings"
+	"sync"
+	"time"
 
 	"github.com/arsenal/internal/config"
 	"github.com/arsenal/internal/plugin"
@@ -278,12 +280,92 @@ func (m *Manager) download(url string) (string, error) {
 	}
 	defer func() { _ = tmpFile.Close() }()
 
-	if _, err := io.Copy(tmpFile, resp.Body); err != nil {
-		_ = os.Remove(tmpFile.Name())
-		return "", err
+	// Content-Length から総ファイルサイズを取得
+	totalSize := resp.ContentLength
+
+	// プログレスバー付きでダウンロード
+	if totalSize > 0 {
+		pw := &progressWriter{
+			total:     totalSize,
+			startTime: time.Now(),
+		}
+		reader := io.TeeReader(resp.Body, pw)
+
+		// 進捗表示用のゴルーチン
+		done := make(chan bool)
+		go func() {
+			ticker := time.NewTicker(100 * time.Millisecond)
+			defer ticker.Stop()
+			for {
+				select {
+				case <-done:
+					return
+				case <-ticker.C:
+					pw.printProgress()
+				}
+			}
+		}()
+
+		if _, err := io.Copy(tmpFile, reader); err != nil {
+			done <- true
+			_ = os.Remove(tmpFile.Name())
+			return "", err
+		}
+
+		done <- true
+		pw.printComplete()
+	} else {
+		// Content-Length がない場合は通常のコピー
+		if _, err := io.Copy(tmpFile, resp.Body); err != nil {
+			_ = os.Remove(tmpFile.Name())
+			return "", err
+		}
 	}
 
 	return tmpFile.Name(), nil
+}
+
+// プログレスバー用のライター
+type progressWriter struct {
+	total     int64
+	current   int64
+	startTime time.Time
+	mu        sync.Mutex
+}
+
+func (pw *progressWriter) Write(p []byte) (int, error) {
+	n := len(p)
+	pw.mu.Lock()
+	pw.current += int64(n)
+	pw.mu.Unlock()
+	return n, nil
+}
+
+func (pw *progressWriter) printProgress() {
+	pw.mu.Lock()
+	current := pw.current
+	total := pw.total
+	pw.mu.Unlock()
+
+	if total <= 0 {
+		return
+	}
+
+	percent := float64(current) / float64(total) * 100
+	currentMB := float64(current) / (1024 * 1024)
+	totalMB := float64(total) / (1024 * 1024)
+
+	// 同じ行を上書き
+	fmt.Printf("\r   \x1b[36mダウンロード中... %.1f MB / %.1f MB (%.0f%%)\x1b[0m", currentMB, totalMB, percent)
+}
+
+func (pw *progressWriter) printComplete() {
+	pw.mu.Lock()
+	total := pw.total
+	pw.mu.Unlock()
+
+	totalMB := float64(total) / (1024 * 1024)
+	fmt.Printf("\r   \x1b[32mダウンロード完了 (%.1f MB)\x1b[0m\n", totalMB)
 }
 
 // アーカイブを対象ディレクトリに展開する
