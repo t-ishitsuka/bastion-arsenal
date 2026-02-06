@@ -14,6 +14,17 @@ var (
 	paths    *config.Paths
 	registry *plugin.Registry
 	manager  *version.Manager
+
+	// Version information
+	versionInfo = struct {
+		Version   string
+		Commit    string
+		BuildDate string
+	}{
+		Version:   "dev",
+		Commit:    "unknown",
+		BuildDate: "unknown",
+	}
 )
 
 func NewRootCmd() *cobra.Command {
@@ -108,6 +119,7 @@ func NewRootCmd() *cobra.Command {
 		newDoctorCmd(),
 		newPluginCmd(),
 		newInitShellCmd(),
+		newVersionCmd(),
 	)
 
 	return root
@@ -134,6 +146,13 @@ func initialize() error {
 	manager = version.NewManager(paths, registry)
 	_ = manager // 将来の CLI コマンドで使用予定
 	return nil
+}
+
+// SetVersion sets version information
+func SetVersion(version, commit, buildDate string) {
+	versionInfo.Version = version
+	versionInfo.Commit = commit
+	versionInfo.BuildDate = buildDate
 }
 
 // ルートコマンドを実行する
