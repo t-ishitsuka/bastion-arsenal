@@ -29,16 +29,16 @@ var (
 
 func NewRootCmd() *cobra.Command {
 	root := &cobra.Command{
-		Use:   "arsenal",
+		Use:   "bastion-arsenal",
 		Short: "⚔️  Arsenal - 軽量マルチランタイムバージョンマネージャー",
 		Long: `Arsenal は複数のランタイム/SDK バージョンを単一の CLI から管理します。
 
-  arsenal install node 20.10.0    特定バージョンをインストール
-  arsenal use node 20.10.0        バージョンを切り替え
-  arsenal ls node                 インストール済みバージョン一覧
-  arsenal sync                    .toolversions から同期
-  arsenal current                 アクティブバージョンを表示
-  arsenal doctor                  環境ヘルスチェック`,
+  bastion-arsenal install node 20.10.0    特定バージョンをインストール
+  bastion-arsenal use node 20.10.0        バージョンを切り替え
+  bastion-arsenal ls node                 インストール済みバージョン一覧
+  bastion-arsenal sync                    .toolversions から同期
+  bastion-arsenal current                 アクティブバージョンを表示
+  bastion-arsenal doctor                  環境ヘルスチェック`,
 		SilenceUsage:  true,
 		SilenceErrors: true,
 		PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
@@ -58,13 +58,13 @@ func NewRootCmd() *cobra.Command {
 
 使用例:
   # Bash の場合 (~/.bashrc に追加)
-  source <(arsenal completion bash)
+  source <(bastion-arsenal completion bash)
 
   # Zsh の場合 (~/.zshrc に追加)
-  source <(arsenal completion zsh)
+  source <(bastion-arsenal completion zsh)
 
   # Fish の場合
-  arsenal completion fish | source`,
+  bastion-arsenal completion fish | source`,
 		ValidArgs: []string{"bash", "zsh", "fish", "powershell"},
 		Args:      cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
@@ -91,9 +91,9 @@ func NewRootCmd() *cobra.Command {
 		Long: `任意のコマンドの詳細なヘルプ情報を表示します。
 
 使用例:
-  arsenal help
-  arsenal help plugin
-  arsenal help plugin list`,
+  bastion-arsenal help
+  bastion-arsenal help plugin
+  bastion-arsenal help plugin list`,
 		Run: func(c *cobra.Command, args []string) {
 			cmd, _, e := root.Find(args)
 			if e != nil || cmd == nil {

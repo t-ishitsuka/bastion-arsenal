@@ -87,4 +87,6 @@ jobs:
         run: make build
 
       - name: Verify binary
-        run: ./arsenal --help
+        run: |
+          ./bastion-arsenal --help
+          ./bastion-arsenal version
