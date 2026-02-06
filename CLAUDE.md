@@ -118,13 +118,13 @@ bastion init
 - `plugin.go` - arsenal plugin list コマンド [実装済み]
 - `current.go` - arsenal current コマンド [実装済み]
 - `list.go` - arsenal ls コマンド [実装済み]
+- `sync.go` - arsenal sync コマンド [実装済み]
 - `doctor.go` - arsenal doctor コマンド [実装済み]
 
 ### 未実装
 
 #### CLI コマンド (internal/cli/)
 以下のコマンドファイルが未実装（現在は root.go でコメントアウト）:
-- `sync.go` - arsenal sync コマンド
 - `initshell.go` - arsenal init-shell コマンド
 
 #### プラグイン定義 (internal/plugin/builtin/)
@@ -170,7 +170,7 @@ bastion init
 | `arsenal ls <tool>` | インストール済みバージョン一覧 | [実装済み] |
 | `arsenal ls-remote <tool>` | リモートの利用可能バージョン取得 | [実装済み] |
 | `arsenal current` | 全ツールのアクティブバージョン表示 | [実装済み] |
-| `arsenal sync` | .toolversions から一括セットアップ | [ロジック実装済み] CLI未実装 |
+| `arsenal sync` | .toolversions から一括セットアップ | [実装済み] |
 | `arsenal doctor` | 環境ヘルスチェック | [実装済み] |
 | `arsenal plugin list` | 対応ツール一覧 | [実装済み] |
 | `arsenal init-shell [bash\|zsh\|fish]` | シェル設定スクリプト出力 | 未実装 |
@@ -191,10 +191,9 @@ bastion init
 
 ### 優先度高
 
-1. **残りの CLI コマンドファイル実装** - sync.go, initshell.go
-   - 既存の Manager メソッドを呼び出すだけ
-   - Cobra のフラグ定義とバリデーション
-   - 各コマンドのテスト実装
+1. **init-shell コマンド実装** - initshell.go
+   - bash/zsh/fish 用のシェル設定スクリプト生成
+   - PATH 設定と補完スクリプト
 
 2. **`post_install` コマンド実行** - Python/Rust/PHP のビルド
    - `os/exec` でシェルコマンド実行
