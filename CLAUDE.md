@@ -47,7 +47,7 @@ Bastion エコシステムの一部として、Claude Code マルチエージェ
 
 | カテゴリ                               | 状態       |
 | -------------------------------------- | ---------- |
-| CLI コマンド（11種類）                 | [実装済み] |
+| CLI コマンド（12種類）                 | [実装済み] |
 | バージョン管理ロジック                 | [実装済み] |
 | .toolversions パーサー                 | [実装済み] |
 | シェル統合（bash/zsh/fish）            | [実装済み] |
@@ -56,6 +56,7 @@ Bastion エコシステムの一部として、Claude Code マルチエージェ
 | プリビルドバイナリ配布                 | [実装済み] |
 | GitHub Actions リリース自動化          | [実装済み] |
 | インストールスクリプト                 | [実装済み] |
+| 自己更新機能（self update）            | [実装済み] |
 | テスト（カバレッジ73%+）               | [実装済み] |
 
 ### 対応ツール
@@ -87,7 +88,6 @@ GitHub Releases で自動配布。main ブランチへのプッシュで自動�
 2. **post_install 実行** - Python/Rust/PHP のビルド処理
 3. **エラーハンドリング強化** - ネットワークエラーのリトライ等
 4. **パッケージマネージャ対応** - Homebrew, Scoop
-5. **自動アップデート機能** - `bastion-arsenal update`
 
 ---
 
@@ -137,6 +137,7 @@ arsenal/
 | `plugin list`                    | 対応ツール一覧                                         | [実装済み] |
 | `init-shell [bash\|zsh\|fish]`   | シェル設定スクリプト出力                               | [実装済み] |
 | `version`                        | バージョン情報を表示                                   | [実装済み] |
+| `self update [--check\|--force]` | Arsenal を最新版に更新（GitHub Releases から）         | [実装済み] |
 
 注: バイナリ名は `bastion-arsenal`
 
