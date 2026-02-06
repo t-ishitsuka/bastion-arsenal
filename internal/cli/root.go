@@ -102,7 +102,7 @@ func NewRootCmd() *cobra.Command {
 		// newInstallCmd(),
 		// newUseCmd(),
 		// newUninstallCmd(),
-		// newListCmd(),
+		newListCmd(),
 		newCurrentCmd(),
 		// newSyncCmd(),
 		// newDoctorCmd(),
