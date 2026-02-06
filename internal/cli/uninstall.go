@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/spf13/cobra"
+	"github.com/arsenal/internal/terminal"
 )
 
 func newUninstallCmd() *cobra.Command {
@@ -38,10 +39,10 @@ func runUninstall(toolName, version string) error {
 	isCurrentVersion := current == version
 
 	if isCurrentVersion {
-		fmt.Printf("警告: %s %s は現在アクティブなバージョンです\n", p.DisplayName, version)
+		terminal.PrintWarning("%s %s は現在アクティブなバージョンです", p.DisplayName, version)
 	}
 
-	fmt.Printf("%s %s をアンインストールします\n", p.DisplayName, version)
+	terminal.PrintfBlue("🗑️  %s %s をアンインストールします\n", p.DisplayName, version)
 
 	// アンインストール前に他のバージョン一覧を取得
 	versions, _ := manager.List(toolName)
@@ -62,26 +63,26 @@ func runUninstall(toolName, version string) error {
 		// 最新のバージョン（リストの最後）に切り替え
 		latestVersion := remainingVersions[len(remainingVersions)-1]
 		if err := manager.Use(toolName, latestVersion); err != nil {
-			fmt.Printf("警告: %s に自動切り替えできませんでした: %v\n", latestVersion, err)
+			terminal.PrintWarning("%s に自動切り替えできませんでした: %v", latestVersion, err)
 		} else {
-			fmt.Printf("🔄 自動的に %s %s に切り替えました\n", p.DisplayName, latestVersion)
+			terminal.PrintfCyan("🔄 自動的に %s %s に切り替えました\n", p.DisplayName, latestVersion)
 		}
 	}
 
 	// 他にインストール済みバージョンがあるか確認
 	if len(remainingVersions) > 0 {
 		fmt.Println()
-		fmt.Println("他のインストール済みバージョン:")
+		terminal.PrintlnBlue("他のインストール済みバージョン:")
 		for _, v := range remainingVersions {
 			if isCurrentVersion && v == remainingVersions[len(remainingVersions)-1] {
-				fmt.Printf("  * %s (現在使用中)\n", v)
+				fmt.Printf("  * %s %s\n", terminal.Green(v), terminal.Yellow("(現在使用中)"))
 			} else {
 				fmt.Printf("    %s\n", v)
 			}
 		}
 	} else {
 		fmt.Println()
-		fmt.Printf("%s のインストール済みバージョンがなくなりました\n", p.DisplayName)
+		terminal.PrintfYellow("%s のインストール済みバージョンがなくなりました\n", p.DisplayName)
 	}
 
 	return nil

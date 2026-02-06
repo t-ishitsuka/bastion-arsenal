@@ -5,6 +5,7 @@ import (
 
 	"github.com/arsenal/internal/version"
 	"github.com/spf13/cobra"
+	"github.com/arsenal/internal/terminal"
 )
 
 func newDoctorCmd() *cobra.Command {
@@ -24,7 +25,7 @@ func newDoctorCmd() *cobra.Command {
 }
 
 func runDoctor() error {
-	fmt.Println("Arsenal 環境をチェック中...")
+	terminal.PrintlnBlue("🩺 Arsenal 環境をチェック中...")
 	fmt.Println()
 
 	// 診断を実行
@@ -35,31 +36,34 @@ func runDoctor() error {
 	hasErrors := false
 
 	for _, result := range results {
-		var icon string
+		var icon, coloredName string
 		switch result.Status {
 		case version.StatusOK:
-			icon = "✓"
+			icon = terminal.Green("✓")
+			coloredName = result.Name
 		case version.StatusWarn:
-			icon = "⚠"
+			icon = terminal.Yellow("⚠")
+			coloredName = terminal.Yellow(result.Name)
 			hasWarnings = true
 		case version.StatusError:
-			icon = "✗"
+			icon = terminal.Red("✗")
+			coloredName = terminal.Red(result.Name)
 			hasErrors = true
 		}
 
-		fmt.Printf("%s %s: %s\n", icon, result.Name, result.Message)
+		fmt.Printf("%s %s: %s\n", icon, coloredName, result.Message)
 	}
 
 	fmt.Println()
 
 	// サマリーを表示
 	if hasErrors {
-		fmt.Println("エラーが検出されました。上記のエラーを修正してください。")
+		terminal.PrintError("エラーが検出されました。上記のエラーを修正してください。")
 		return fmt.Errorf("環境チェックでエラーが検出されました")
 	} else if hasWarnings {
-		fmt.Println("警告があります。必要に応じて対応してください。")
+		terminal.PrintWarning("警告があります。必要に応じて対応してください。")
 	} else {
-		fmt.Println("✓ 全てのチェックに合格しました")
+		terminal.PrintSuccess("全てのチェックに合格しました")
 	}
 
 	return nil

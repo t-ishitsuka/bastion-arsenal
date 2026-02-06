@@ -5,6 +5,7 @@ import (
 	"sort"
 
 	"github.com/spf13/cobra"
+	"github.com/arsenal/internal/terminal"
 )
 
 func newPluginCmd() *cobra.Command {
@@ -45,12 +46,12 @@ func runPluginList() error {
 	sort.Strings(names)
 
 	// 表示
-	fmt.Println("利用可能ツール:")
+	terminal.PrintlnBlue("利用可能ツール:")
 	fmt.Println()
 
 	for _, name := range names {
 		p := plugins[name]
-		fmt.Printf("  %s\n", p.DisplayName)
+		fmt.Printf("  %s\n", terminal.Green(p.DisplayName))
 		fmt.Printf("    名称: %s\n", p.Name)
 		if p.Description != "" {
 			fmt.Printf("    説明: %s\n", p.Description)

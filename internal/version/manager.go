@@ -17,6 +17,7 @@ import (
 
 	"github.com/arsenal/internal/config"
 	"github.com/arsenal/internal/plugin"
+	"github.com/arsenal/internal/terminal"
 )
 
 // バージョンのインストールと切り替えを処理する
@@ -54,7 +55,7 @@ func (m *Manager) Install(toolName, version string) error {
 
 	// ダウンロード URL を解決
 	url := p.ResolveDownloadURL(version)
-	fmt.Printf("📦 %s %s をダウンロード中...\n", p.DisplayName, version)
+	terminal.PrintInfo("%s %s をダウンロード中...", p.DisplayName, version)
 	fmt.Printf("   %s\n", url)
 
 	// ダウンロード
@@ -66,7 +67,7 @@ func (m *Manager) Install(toolName, version string) error {
 	defer func() { _ = os.Remove(tmpFile) }()
 
 	// 展開
-	fmt.Printf("📂 展開中...\n")
+	terminal.PrintlnBlue("📂 展開中...")
 	archiveType := p.ResolveArchiveType()
 	if err := m.extract(tmpFile, installDir, archiveType); err != nil {
 		_ = os.RemoveAll(installDir)
@@ -75,14 +76,14 @@ func (m *Manager) Install(toolName, version string) error {
 
 	// インストール後コマンドを実行
 	if len(p.PostInstall) > 0 {
-		fmt.Printf("🔧 インストール後処理を実行中...\n")
+		terminal.PrintlnCyan("🔧 インストール後処理を実行中...")
 		if err := m.runPostInstall(p, installDir); err != nil {
 			_ = os.RemoveAll(installDir)
 			return fmt.Errorf("インストール後処理エラー: %w", err)
 		}
 	}
 
-	fmt.Printf("✅ %s %s のインストールが完了しました\n", p.DisplayName, version)
+	terminal.PrintSuccess("%s %s のインストールが完了しました", p.DisplayName, version)
 	return nil
 }
 
@@ -110,7 +111,7 @@ func (m *Manager) Use(toolName, version string) error {
 		return fmt.Errorf("symlink 作成エラー: %w", err)
 	}
 
-	fmt.Printf("✅ %s %s に切り替えました\n", p.DisplayName, version)
+	terminal.PrintSuccess("%s %s に切り替えました", p.DisplayName, version)
 	return nil
 }
 
@@ -137,7 +138,7 @@ func (m *Manager) Uninstall(toolName, version string) error {
 		return fmt.Errorf("削除エラー: %w", err)
 	}
 
-	fmt.Printf("🗑️  %s %s をアンインストールしました\n", p.DisplayName, version)
+	terminal.PrintSuccess("%s %s をアンインストールしました", p.DisplayName, version)
 	return nil
 }
 
@@ -503,7 +504,7 @@ func (m *Manager) extractZip(archivePath, targetDir string) error {
 func (m *Manager) runPostInstall(p *plugin.Plugin, installDir string) error {
 	// TODO: インストール後コマンド実行を実装
 	// os/exec を使ってインストールディレクトリでコマンドを実行
-	fmt.Printf("   ⚠️  インストール後コマンドはまだ実装されていません\n")
+	terminal.PrintWarning("インストール後コマンドはまだ実装されていません")
 	return nil
 }
 

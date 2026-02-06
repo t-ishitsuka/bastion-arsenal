@@ -5,6 +5,7 @@ import (
 	"os"
 	"strings"
 
+	"github.com/arsenal/internal/terminal"
 	"github.com/spf13/cobra"
 )
 
@@ -50,7 +51,7 @@ func runUse(toolName, version string, local bool) error {
 		if err := updateToolVersionsFile(toolName, version); err != nil {
 			return fmt.Errorf(".toolversions 更新エラー: %w", err)
 		}
-		fmt.Printf("📝 .toolversions に %s %s を記録しました\n", p.DisplayName, version)
+		terminal.PrintSuccess(".toolversions に %s %s を記録しました", p.DisplayName, version)
 	}
 
 	return nil

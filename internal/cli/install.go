@@ -3,6 +3,7 @@ package cli
 import (
 	"fmt"
 
+	"github.com/arsenal/internal/terminal"
 	"github.com/spf13/cobra"
 )
 
@@ -29,7 +30,7 @@ func runInstall(toolName, version string) error {
 		return err
 	}
 
-	fmt.Printf("%s %s をインストールします\n", p.DisplayName, version)
+	terminal.PrintfBlue("📦 %s %s をインストールします\n", p.DisplayName, version)
 	fmt.Println()
 
 	// インストール実行
@@ -38,7 +39,7 @@ func runInstall(toolName, version string) error {
 	}
 
 	fmt.Println()
-	fmt.Println("次のコマンドで有効化できます:")
+	terminal.PrintlnCyan("次のコマンドで有効化できます:")
 	fmt.Printf("  arsenal use %s %s\n", toolName, version)
 
 	return nil

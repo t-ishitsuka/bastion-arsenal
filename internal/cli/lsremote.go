@@ -5,6 +5,7 @@ import (
 
 	"github.com/arsenal/internal/version"
 	"github.com/spf13/cobra"
+	"github.com/arsenal/internal/terminal"
 )
 
 func newLsRemoteCmd() *cobra.Command {
@@ -48,7 +49,7 @@ func runLsRemote(toolName string, limit int, ltsOnly bool) error {
 		return err
 	}
 
-	fmt.Printf("%s の利用可能なバージョン一覧を取得中...\n", p.DisplayName)
+	terminal.PrintfBlue("📡 %s の利用可能なバージョン一覧を取得中...\n", p.DisplayName)
 	fmt.Println()
 
 	// リモートからバージョン一覧を取得
@@ -75,27 +76,27 @@ func runLsRemote(toolName string, limit int, ltsOnly bool) error {
 
 	if len(versions) == 0 {
 		if ltsOnly {
-			fmt.Printf("%s の LTS バージョンが見つかりませんでした\n", p.DisplayName)
+			terminal.PrintfYellow("%s の LTS バージョンが見つかりませんでした\n", p.DisplayName)
 		} else {
-			fmt.Printf("%s の利用可能なバージョンが見つかりませんでした\n", p.DisplayName)
+			terminal.PrintfYellow("%s の利用可能なバージョンが見つかりませんでした\n", p.DisplayName)
 		}
 		return nil
 	}
 
 	// 表示
-	fmt.Printf("%s の利用可能なバージョン", p.DisplayName)
+	header := fmt.Sprintf("%s の利用可能なバージョン", p.DisplayName)
 	if ltsOnly {
-		fmt.Print("（LTS のみ）")
+		header += "（LTS のみ）"
 	}
 	if limit > 0 && len(versions) == limit {
-		fmt.Printf("（最新 %d 件）", limit)
+		header += fmt.Sprintf("（最新 %d 件）", limit)
 	}
-	fmt.Println(":")
+	terminal.PrintlnBlue(header + ":")
 	fmt.Println()
 
 	for _, v := range versions {
 		if v.LTS != "" {
-			fmt.Printf("  %s (LTS: %s)\n", v.Version, v.LTS)
+			fmt.Printf("  %s %s\n", terminal.Green(v.Version), terminal.Yellow("(LTS: "+v.LTS+")"))
 		} else {
 			fmt.Printf("  %s\n", v.Version)
 		}
@@ -103,7 +104,7 @@ func runLsRemote(toolName string, limit int, ltsOnly bool) error {
 
 	if limit > 0 && len(versions) == limit && !ltsOnly {
 		fmt.Println()
-		fmt.Println("全バージョンを表示するには --all を使用してください:")
+		terminal.PrintlnCyan("全バージョンを表示するには --all を使用してください:")
 		fmt.Printf("  arsenal ls-remote %s --all\n", toolName)
 	}
 

@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/spf13/cobra"
+	"github.com/arsenal/internal/terminal"
 )
 
 func newListCmd() *cobra.Command {
@@ -38,9 +39,9 @@ func runList(toolName string) error {
 	}
 
 	if len(versions) == 0 {
-		fmt.Printf("%s のインストール済みバージョンがありません\n", p.DisplayName)
+		terminal.PrintfYellow("%s のインストール済みバージョンがありません\n", p.DisplayName)
 		fmt.Println()
-		fmt.Println("インストールするには:")
+		terminal.PrintlnCyan("インストールするには:")
 		fmt.Printf("  arsenal install %s <version>\n", toolName)
 		return nil
 	}
@@ -52,12 +53,12 @@ func runList(toolName string) error {
 	}
 
 	// 表示
-	fmt.Printf("%s のインストール済みバージョン:\n", p.DisplayName)
+	terminal.PrintfBlue("%s のインストール済みバージョン:\n", p.DisplayName)
 	fmt.Println()
 
 	for _, version := range versions {
 		if version == current {
-			fmt.Printf("  * %s (現在使用中)\n", version)
+			fmt.Printf("  * %s %s\n", terminal.Green(version), terminal.Yellow("(現在使用中)"))
 		} else {
 			fmt.Printf("    %s\n", version)
 		}
