@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"sort"
 
-	"github.com/spf13/cobra"
 	"github.com/arsenal/internal/terminal"
+	"github.com/spf13/cobra"
 )
 
 func newCurrentCmd() *cobra.Command {

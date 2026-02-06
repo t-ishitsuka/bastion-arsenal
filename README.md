@@ -1,6 +1,6 @@
 # Arsenal
 
-[![Test](https://github.com/t-ishitsuka/arsenal/workflows/Test/badge.svg)](https://github.com/t-ishitsuka/arsenal/actions)
+[![Test](https://github.com/t-ishitsuka/bastion-arsenal/workflows/Test/badge.svg)](https://github.com/t-ishitsuka/bastion-arsenal/actions)
 
 軽量マルチランタイムバージョンマネージャー。asdf/mise に依存せず、シンプルで軽量な独自実装を目指す。Bastion エコシステムの一部として、開発環境の統一管理を実現。
 

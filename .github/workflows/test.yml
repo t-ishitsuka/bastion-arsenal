@@ -53,6 +53,7 @@ jobs:
 
   lint:
     name: Lint
+    needs: test
     runs-on: ubuntu-latest
 
     steps:
@@ -72,6 +73,7 @@ jobs:
 
   build:
     name: Build
+    needs: lint
     runs-on: ubuntu-latest
 
     steps:
