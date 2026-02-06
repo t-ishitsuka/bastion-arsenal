@@ -134,9 +134,7 @@ bastion init
 - `php.toml` - PHP プラグイン定義
 
 #### その他機能
-- `ls-remote` コマンド - リモートバージョン一覧取得
 - post_install 実行機能 - Python/Rust/PHP のビルド処理
-- `--local` フラグ - .toolversions への書き込み
 - プログレスバー付きダウンロード
 
 ---
@@ -157,7 +155,7 @@ bastion init
 - **テストカバレッジ**: 全体 41%+ (CLI: 73.3%, config: 84.6%, plugin: 66.1%)
 - **GitHub Actions**: PR/push 時に自動テスト・lint・ビルド実行
 - **golangci-lint**: errcheck, staticcheck, unused など標準リンター有効化
-- **カバレッジ目標**: 最低 25%、目標 50% ✅ 達成
+- **カバレッジ目標**: 最低 25%、目標 50% [達成]
 
 ### CLI コマンド一覧
 
