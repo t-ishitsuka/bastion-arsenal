@@ -111,6 +111,8 @@ bastion init
 
 #### CLI コマンド (internal/cli/)
 実装済み:
+- `install.go` - arsenal install コマンド [実装済み]
+- `lsremote.go` - arsenal ls-remote コマンド [実装済み]
 - `plugin.go` - arsenal plugin list コマンド [実装済み]
 - `current.go` - arsenal current コマンド [実装済み]
 - `list.go` - arsenal ls コマンド [実装済み]
@@ -120,7 +122,6 @@ bastion init
 
 #### CLI コマンド (internal/cli/)
 以下のコマンドファイルが未実装（現在は root.go でコメントアウト）:
-- `install.go` - arsenal install コマンド
 - `use.go` - arsenal use コマンド
 - `uninstall.go` - arsenal uninstall コマンド
 - `sync.go` - arsenal sync コマンド
@@ -153,7 +154,7 @@ bastion init
 
 ### テスト・CI/CD
 
-- **テストカバレッジ**: 全体 35%+ (CLI: 65.9%, config: 84.6%, plugin: 66.1%)
+- **テストカバレッジ**: 全体 37%+ (CLI: 71.3%, config: 84.6%, plugin: 66.1%)
 - **GitHub Actions**: PR/push 時に自動テスト・lint・ビルド実行
 - **golangci-lint**: errcheck, staticcheck, unused など標準リンター有効化
 - **カバレッジ目標**: 最低 25%、目標 50%
@@ -162,17 +163,17 @@ bastion init
 
 | コマンド | 説明 | 状態 |
 |---------|------|------|
-| `arsenal install <tool> <version>` | バージョンをインストール | [ロジック実装済み] CLI未実装 |
+| `arsenal install <tool> <version>` | バージョンをインストール | [実装済み] |
 | `arsenal use <tool> <version>` | バージョン切り替え (symlink) | [ロジック実装済み] CLI未実装 |
 | `arsenal use <tool> <version> --local` | 切り替え + .toolversions に書き込み | 未実装 |
 | `arsenal uninstall <tool> <version>` | バージョン削除 | [ロジック実装済み] CLI未実装 |
 | `arsenal ls <tool>` | インストール済みバージョン一覧 | [実装済み] |
+| `arsenal ls-remote <tool>` | リモートの利用可能バージョン取得 | [実装済み] |
 | `arsenal current` | 全ツールのアクティブバージョン表示 | [実装済み] |
 | `arsenal sync` | .toolversions から一括セットアップ | [ロジック実装済み] CLI未実装 |
 | `arsenal doctor` | 環境ヘルスチェック | [実装済み] |
 | `arsenal plugin list` | 対応ツール一覧 | [実装済み] |
 | `arsenal init-shell [bash\|zsh\|fish]` | シェル設定スクリプト出力 | 未実装 |
-| `arsenal ls-remote <tool>` | リモートの利用可能バージョン取得 | 未実装 |
 
 ### 対応ツールと状態
 
@@ -190,17 +191,12 @@ bastion init
 
 ### 優先度高
 
-1. **残りの CLI コマンドファイル実装** - install.go, use.go, uninstall.go, sync.go, initshell.go
+1. **残りの CLI コマンドファイル実装** - use.go, uninstall.go, sync.go, initshell.go
    - 既存の Manager メソッドを呼び出すだけ
    - Cobra のフラグ定義とバリデーション
    - 各コマンドのテスト実装
 
-2. **`ls-remote` コマンド** - リモートの利用可能バージョン一覧取得
-   - node: `https://nodejs.org/dist/index.json` を GET して version 一覧
-   - go: `https://go.dev/dl/?mode=json&include=all` を GET
-   - 各プラグインの `list_url` + `list_format` を使う
-
-3. **`post_install` コマンド実行** - Python/Rust/PHP のビルド
+2. **`post_install` コマンド実行** - Python/Rust/PHP のビルド
    - `os/exec` でシェルコマンド実行
    - `{{install_dir}}` テンプレート変数の置換
    - 作業ディレクトリを展開先に設定
@@ -212,10 +208,11 @@ bastion init
 ### 優先度中
 
 5. **追加プラグイン定義** - go.toml, python.toml, rust.toml, php.toml
-6. **`--output=json` フラグ** - Bastion 連携用
-7. **tar.xz 展開サポート** - Python ソース配布用
-8. **エラーハンドリング強化** - ネットワークエラーのリトライ等
-9. **バージョンのエイリアス** - `arsenal use node lts` 等
+6. **`ls-remote --lts-only` フラグ** - LTS バージョンのみ表示
+7. **`--output=json` フラグ** - Bastion 連携用
+8. **tar.xz 展開サポート** - Python ソース配布用
+9. **エラーハンドリング強化** - ネットワークエラーのリトライ等
+10. **バージョンのエイリアス** - `arsenal use node lts` 等
 
 ### 優先度低
 

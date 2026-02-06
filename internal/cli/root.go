@@ -99,10 +99,11 @@ func NewRootCmd() *cobra.Command {
 
 	// TODO: コマンドファイルを実装
 	root.AddCommand(
-		// newInstallCmd(),
+		newInstallCmd(),
 		// newUseCmd(),
 		// newUninstallCmd(),
 		newListCmd(),
+		newLsRemoteCmd(),
 		newCurrentCmd(),
 		// newSyncCmd(),
 		newDoctorCmd(),

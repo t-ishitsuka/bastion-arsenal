@@ -4,6 +4,7 @@ import (
 	"archive/tar"
 	"archive/zip"
 	"compress/gzip"
+	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
@@ -422,4 +423,75 @@ func (m *Manager) runPostInstall(p *plugin.Plugin, installDir string) error {
 	// os/exec を使ってインストールディレクトリでコマンドを実行
 	fmt.Printf("   ⚠️  インストール後コマンドはまだ実装されていません\n")
 	return nil
+}
+
+// リモートバージョン情報を表す
+type RemoteVersion struct {
+	Version string
+	LTS     string // "" または LTS コードネーム（"Krypton" など）
+}
+
+// リモートから利用可能なバージョン一覧を取得する
+func (m *Manager) ListRemote(toolName string, limit int) ([]RemoteVersion, error) {
+	p, err := m.registry.Get(toolName)
+	if err != nil {
+		return nil, err
+	}
+
+	if p.ListURL == "" {
+		return nil, fmt.Errorf("%s は ls-remote に対応していません", toolName)
+	}
+
+	// リモートから取得
+	resp, err := http.Get(p.ListURL)
+	if err != nil {
+		return nil, fmt.Errorf("リモート取得エラー: %w", err)
+	}
+	defer func() { _ = resp.Body.Close() }()
+
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("HTTP %d: %s", resp.StatusCode, resp.Status)
+	}
+
+	// JSON フォーマットをパース
+	if p.ListFormat != "json" {
+		return nil, fmt.Errorf("サポートされていないフォーマット: %s (現在は json のみ対応)", p.ListFormat)
+	}
+
+	var data []map[string]interface{}
+	if err := json.NewDecoder(resp.Body).Decode(&data); err != nil {
+		return nil, fmt.Errorf("JSON パースエラー: %w", err)
+	}
+
+	// バージョンを抽出
+	versions := make([]RemoteVersion, 0, len(data))
+	for _, item := range data {
+		if ver, ok := item["version"].(string); ok {
+			// version_prefix を削除
+			if p.VersionPrefix != "" && strings.HasPrefix(ver, p.VersionPrefix) {
+				ver = strings.TrimPrefix(ver, p.VersionPrefix)
+			}
+
+			// LTS 情報を取得
+			lts := ""
+			if ltsVal, ok := item["lts"]; ok {
+				// lts は false または文字列（コードネーム）
+				if ltsStr, ok := ltsVal.(string); ok {
+					lts = ltsStr
+				}
+			}
+
+			versions = append(versions, RemoteVersion{
+				Version: ver,
+				LTS:     lts,
+			})
+		}
+	}
+
+	// 件数制限
+	if limit > 0 && len(versions) > limit {
+		versions = versions[:limit]
+	}
+
+	return versions, nil
 }
