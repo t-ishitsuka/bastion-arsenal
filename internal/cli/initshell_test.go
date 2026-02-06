@@ -59,7 +59,7 @@ func TestRunInitShellBash(t *testing.T) {
 	if !strings.Contains(output, paths.Root) {
 		t.Errorf("Arsenal のパスが含まれていません: %s", paths.Root)
 	}
-	if !strings.Contains(output, "arsenal completion bash") {
+	if !strings.Contains(output, "bastion-arsenal completion bash") {
 		t.Error("補完スクリプトが含まれていません")
 	}
 }
@@ -98,7 +98,7 @@ func TestRunInitShellZsh(t *testing.T) {
 	if !strings.Contains(output, "export PATH=") {
 		t.Error("export PATH が含まれていません")
 	}
-	if !strings.Contains(output, "arsenal completion zsh") {
+	if !strings.Contains(output, "bastion-arsenal completion zsh") {
 		t.Error("補完スクリプトが含まれていません")
 	}
 }
@@ -137,7 +137,7 @@ func TestRunInitShellFish(t *testing.T) {
 	if !strings.Contains(output, "set -gx PATH") {
 		t.Error("set -gx PATH が含まれていません")
 	}
-	if !strings.Contains(output, "arsenal completion fish") {
+	if !strings.Contains(output, "bastion-arsenal completion fish") {
 		t.Error("補完スクリプトが含まれていません")
 	}
 }
