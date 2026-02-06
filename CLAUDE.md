@@ -1,60 +1,157 @@
 # CLAUDE.md - Arsenal Project
 
 ## 言語設定
-**日本語で応答してください。**
+
+**日本語で応答してください。** コード内コメントは英語OK。
+
+---
+
+## 重要なルール（最優先）
+
+### 1. ドキュメントファイルでの絵文字禁止
+
+**ドキュメントファイル（.md）には絵文字を一切使用しない**
+
+- 対象: CLAUDE.md, README.md, docs/ 配下の全ファイル
+- 理由: ユーザーがドキュメントでの絵文字を嫌う
+- 違反例: ✅, ❌, 🔧, 📦, ⚠️ など全ての絵文字・Unicode記号
+- 正しい表記: [実装済み], (未実装), ※注意
+- 例外: ターミナル出力（CLI実行時の表示）のみ絵文字使用可
+
+このルールは他のすべての規約より優先度が高い。
+
+### 2. 実装とドキュメントの同期
+
+**コード変更時は必ず関連ドキュメントを同時更新する**
+
+- 新機能実装 → README.md, CLAUDE.md を即座に更新
+- コマンド追加 → コマンド一覧表、使用例を同時に更新
+- 仕様変更 → docs/ 配下のファイルを同時に更新
+- 実装とドキュメントの不一致は厳禁
 
 ---
 
 ## プロジェクト概要
 
-**Arsenal（アーセナル）** は軽量マルチランタイムバージョンマネージャー。
-asdf/mise 等の既存ツールに依存せず、自前で管理する学習目的＋軽量化がモチベーション。
+Arsenal は軽量マルチランタイムバージョンマネージャー。asdf/mise 等の既存ツールに依存せず、自前で管理する学習目的＋軽量化がモチベーション。
 
-### 上位プロジェクト：Bastion エコシステム
+Bastion エコシステムの一部として、Claude Code マルチエージェント管理システムから呼び出される。`bastion init` 時に `arsenal sync` が自動実行され、.toolversions からランタイムを整備。
 
-Arsenal は「要塞シリーズ」の一部。全体構成：
+`~/.arsenal/` ディレクトリで管理し、symlink 方式でバージョンを切り替え（shims 不使用）。
+
+---
+
+## 実装状況
+
+### 基本機能（全て実装済み）
+
+| カテゴリ                               | 状態       |
+| -------------------------------------- | ---------- |
+| CLI コマンド（10種類）                 | [実装済み] |
+| バージョン管理ロジック                 | [実装済み] |
+| .toolversions パーサー                 | [実装済み] |
+| シェル統合（bash/zsh/fish）            | [実装済み] |
+| プラグインシステム                     | [実装済み] |
+| ターミナルUI（カラー・プログレスバー） | [実装済み] |
+| テスト（カバレッジ73%+）               | [実装済み] |
+
+### 対応ツール
+
+| ツール  | プラグイン定義 | 状態       |
+| ------- | -------------- | ---------- |
+| Node.js | node.toml      | [実装済み] |
+| Go      | go.toml        | 未実装     |
+| Python  | python.toml    | 未実装     |
+| Rust    | rust.toml      | 未実装     |
+| PHP     | php.toml       | 未実装     |
+
+### TODO（優先度順）
+
+1. **追加プラグイン定義** - go.toml, python.toml, rust.toml, php.toml
+2. **post_install 実行** - Python/Rust/PHP のビルド処理
+3. **エラーハンドリング強化** - ネットワークエラーのリトライ等
+
+---
+
+## 技術スタック
+
+### 依存関係
+
+- Go 1.22+
+- github.com/spf13/cobra（CLI）
+- github.com/BurntSushi/toml（プラグイン）
+- それ以外の外部依存は極力避ける（軽量化方針）
+
+### テスト・品質
+
+- カバレッジ: 73%+ (CLI: 73.6%, config: 84.6%, terminal: 79.4%, plugin: 66.1%)
+- GitHub Actions: PR/push 時に自動テスト・lint・ビルド
+- golangci-lint: errcheck, staticcheck, unused など有効化
+
+### ディレクトリ構造
 
 ```
-┌─────────────────────────────────────────────────────────┐
-│                      BASTION（司令塔）                    │
-│  Claude Code マルチエージェント管理システム                │
-│  Envoy（指揮官）→ Marshall（監督）→ Specialist（実行者）  │
-│  tmux + git worktree で並列管理                          │
-│  実装言語: Go                                            │
-├─────────────────────────────────────────────────────────┤
-│         │                           │                    │
-│         ▼                           ▼                    │
-│  ┌─────────────┐             ┌─────────────┐            │
-│  │   ARSENAL   │             │   CITADEL   │            │
-│  │  （武器庫）  │             │  （城塞）   │            │
-│  │ ランタイム   │             │  Docker     │            │
-│  │ バージョン管理│             │  環境管理   │            │
-│  └─────────────┘             └─────────────┘            │
-└─────────────────────────────────────────────────────────┘
+arsenal/
+├── cmd/arsenal/          # エントリポイント
+├── internal/
+│   ├── cli/              # CLI コマンド定義
+│   ├── config/           # パス管理
+│   ├── plugin/           # プラグインシステム
+│   ├── terminal/         # ターミナルUI（カラー等）
+│   └── version/          # コアバージョン管理ロジック
+└── go.mod
 ```
 
-**連携フロー:**
-```
-bastion init
-  ├─→ arsenal sync    (.toolversions からランタイム整備)
-  ├─→ citadel up      (Docker サービス起動)
-  └─→ worktree + tmux (エージェント並列起動)
-```
+---
 
-**将来追加予定のツール:**
-- Vault（金庫）: シークレット管理
-- Forge（鍛冶場）: タスクランナー
-- Sentinel（歩哨）: ヘルスチェック/待機
-- Watchtower（監視塔）: ログ集約
-- Rampart（城壁）: セキュリティ/証明書
-- Courier（伝令）: 通知/外部連携
-- Drawbridge（跳ね橋）: ネットワーク/トンネル
+## CLI コマンド一覧
+
+| コマンド                         | 説明                                                   | 状態       |
+| -------------------------------- | ------------------------------------------------------ | ---------- |
+| `install <tool> <version>`       | バージョンをインストール                               | [実装済み] |
+| `use <tool> <version> [--local]` | バージョン切り替え（--local で .toolversions に記録）  | [実装済み] |
+| `uninstall <tool> <version>`     | バージョン削除（現在使用中なら自動で最新版に切り替え） | [実装済み] |
+| `ls <tool>`                      | インストール済みバージョン一覧                         | [実装済み] |
+| `ls-remote <tool> [--lts-only]`  | リモートのバージョン一覧（LTSフィルタ可）              | [実装済み] |
+| `current`                        | 全ツールのアクティブバージョン表示                     | [実装済み] |
+| `sync`                           | .toolversions から一括セットアップ                     | [実装済み] |
+| `doctor`                         | 環境ヘルスチェック                                     | [実装済み] |
+| `plugin list`                    | 対応ツール一覧                                         | [実装済み] |
+| `init-shell [bash\|zsh\|fish]`   | シェル設定スクリプト出力                               | [実装済み] |
+
+---
+
+## コーディングパターン
+
+### テスト実装
+
+- 新しいコードを書く際は必ずテストを書く
+- コードを変更したら必ず linter を実行する
+- テーブル駆動テストを推奨
+
+### エラーハンドリング
+
+- Close(), Remove() などのクリーンアップ処理: `defer func() { _ = f.Close() }()`
+- nil チェック後は early return でガード（staticcheck SA5011 対策）
+
+### ドキュメントコメント
+
+- 関数名を繰り返さない
+- 良い例: `// 正しくパスを返すかテストする`
+- 悪い例: `// TestGetPaths は GetPaths 関数が正しくパスを返すかテストする`
+
+### ターミナルUI
+
+- カラー: ANSI エスケープコード使用（internal/terminal/color.go）
+- NO_COLOR 環境変数を尊重
+- プログレスバー: \r で同じ行を上書き、io.TeeReader でストリーム追跡
+- ダウンロード進捗: シアン色、完了: 緑色
 
 ---
 
 ## 詳細ドキュメント
 
-詳細な設計・実装情報は `docs/` ディレクトリを参照：
+以下のファイルで詳細情報を確認してください：
 
 - **[architecture.md](docs/architecture.md)** - ディレクトリ構成、データ構造、パッケージ依存関係
 - **[design-principles.md](docs/design-principles.md)** - 設計方針、制約、軽量化・拡張性の方針
@@ -65,126 +162,21 @@ bastion init
 
 ---
 
-## 現在の実装状況
+## Bastion エコシステム連携
 
-### 実装済み
+Arsenal は「要塞シリーズ」の一部：
 
-#### コアロジック (internal/version/)
-- `manager.go` - Install, Use, Uninstall, List, Current, CurrentAll, Doctor メソッド実装済み
-- `toolversions.go` - .toolversions パーサーと Sync 機能実装済み
+```
+BASTION（司令塔）
+  ├─→ ARSENAL（武器庫）  # ランタイムバージョン管理
+  └─→ CITADEL（城塞）    # Docker環境管理
+```
 
-#### プラグインシステム (internal/plugin/)
-- `plugin.go` - プラグインレジストリ、go:embed によるビルトインプラグイン読み込み実装済み
-- `builtin/node.toml` - Node.js プラグイン定義のみ実装済み
+将来追加予定：Vault（シークレット）、Forge（タスクランナー）、Sentinel（ヘルスチェック）など
 
-#### 設定管理 (internal/config/)
-- `config.go` - パス管理、ディレクトリ構造実装済み
+連携フロー:
 
-#### CLI フレームワーク (internal/cli/)
-- `root.go` - ルートコマンドと初期化ロジック実装済み
-
-#### エントリポイント
-- `cmd/arsenal/main.go` - メイン関数実装済み
-
-### 未実装
-
-#### CLI コマンド (internal/cli/)
-以下のコマンドファイルが未実装（現在は root.go でコメントアウト）:
-- `install.go` - arsenal install コマンド
-- `use.go` - arsenal use コマンド
-- `uninstall.go` - arsenal uninstall コマンド
-- `list.go` - arsenal ls コマンド
-- `current.go` - arsenal current コマンド
-- `sync.go` - arsenal sync コマンド
-- `doctor.go` - arsenal doctor コマンド
-- `plugin.go` - arsenal plugin list コマンド
-- `initshell.go` - arsenal init-shell コマンド
-
-#### プラグイン定義 (internal/plugin/builtin/)
-- `go.toml` - Go プラグイン定義
-- `python.toml` - Python プラグイン定義
-- `rust.toml` - Rust プラグイン定義
-- `php.toml` - PHP プラグイン定義
-
-#### その他機能
-- `ls-remote` コマンド - リモートバージョン一覧取得
-- post_install 実行機能 - Python/Rust/PHP のビルド処理
-- `--local` フラグ - .toolversions への書き込み
-- プログレスバー付きダウンロード
-
----
-
-## 技術仕様概要
-
-### 実装言語・依存
-
-- **Go 1.22+**
-- `github.com/spf13/cobra` - CLI フレームワーク
-- `github.com/BurntSushi/toml` - プラグイン定義パーサー
-- それ以外の外部依存は極力避ける（軽量化方針）
-
-詳細は [architecture.md](docs/architecture.md) と [design-principles.md](docs/design-principles.md) を参照。
-
-### CLI コマンド一覧
-
-| コマンド | 説明 | 状態 |
-|---------|------|------|
-| `arsenal install <tool> <version>` | バージョンをインストール | [ロジック実装済み] CLI未実装 |
-| `arsenal use <tool> <version>` | バージョン切り替え (symlink) | [ロジック実装済み] CLI未実装 |
-| `arsenal use <tool> <version> --local` | 切り替え + .toolversions に書き込み | 未実装 |
-| `arsenal uninstall <tool> <version>` | バージョン削除 | [ロジック実装済み] CLI未実装 |
-| `arsenal ls <tool>` | インストール済みバージョン一覧 | [ロジック実装済み] CLI未実装 |
-| `arsenal current` | 全ツールのアクティブバージョン表示 | [ロジック実装済み] CLI未実装 |
-| `arsenal sync` | .toolversions から一括セットアップ | [ロジック実装済み] CLI未実装 |
-| `arsenal doctor` | 環境ヘルスチェック | [ロジック実装済み] CLI未実装 |
-| `arsenal plugin list` | 対応ツール一覧 | [ロジック実装済み] CLI未実装 |
-| `arsenal init-shell [bash\|zsh\|fish]` | シェル設定スクリプト出力 | 未実装 |
-| `arsenal ls-remote <tool>` | リモートの利用可能バージョン取得 | 未実装 |
-
-### 対応ツールと状態
-
-| ツール | インストール方式 | 状態 |
-|--------|----------------|------|
-| Node.js | プリビルドバイナリ | [プラグイン定義のみ実装] |
-| Go | プリビルドバイナリ | プラグイン定義未実装 |
-| Python | ソースからビルド | プラグイン定義未実装 |
-| Rust | スタンドアロンインストーラ | プラグイン定義未実装 |
-| PHP | ソースからビルド | プラグイン定義未実装 |
-
----
-
-## 未実装・TODO
-
-### 優先度高
-
-1. **CLI コマンドファイル実装** - install.go, use.go など
-   - 既存の Manager メソッドを呼び出すだけ
-   - Cobra のフラグ定義とバリデーション
-
-2. **`ls-remote` コマンド** - リモートの利用可能バージョン一覧取得
-   - node: `https://nodejs.org/dist/index.json` を GET して version 一覧
-   - go: `https://go.dev/dl/?mode=json&include=all` を GET
-   - 各プラグインの `list_url` + `list_format` を使う
-
-3. **`post_install` コマンド実行** - Python/Rust/PHP のビルド
-   - `os/exec` でシェルコマンド実行
-   - `{{install_dir}}` テンプレート変数の置換
-   - 作業ディレクトリを展開先に設定
-
-4. **プログレスバー付きダウンロード**
-   - `Content-Length` から総サイズ取得
-   - `io.TeeReader` でプログレス表示
-
-### 優先度中
-
-5. **追加プラグイン定義** - go.toml, python.toml, rust.toml, php.toml
-6. **`--output=json` フラグ** - Bastion 連携用
-7. **tar.xz 展開サポート** - Python ソース配布用
-8. **エラーハンドリング強化** - ネットワークエラーのリトライ等
-9. **バージョンのエイリアス** - `arsenal use node lts` 等
-
-### 優先度低
-
-10. **自動バージョン切り替え** - `cd` 時に .toolversions を検知して自動 sync
-11. **アップデートチェック** - 新しいバージョンの通知
-12. **キャッシュ** - ダウンロード済みアーカイブの再利用
+```
+bastion init
+  └─→ arsenal sync  # .toolversions からランタイム整備
+```

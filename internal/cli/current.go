@@ -5,6 +5,7 @@ import (
 	"sort"
 
 	"github.com/spf13/cobra"
+	"github.com/arsenal/internal/terminal"
 )
 
 func newCurrentCmd() *cobra.Command {
@@ -29,15 +30,15 @@ func runCurrent() error {
 	}
 
 	if len(currentAll) == 0 {
-		fmt.Println("アクティブなツールがありません")
+		terminal.PrintlnYellow("アクティブなツールがありません")
 		fmt.Println()
-		fmt.Println("ツールをインストールして使用するには:")
+		terminal.PrintlnCyan("ツールをインストールして使用するには:")
 		fmt.Println("  arsenal install <tool> <version>")
 		fmt.Println("  arsenal use <tool> <version>")
 		return nil
 	}
 
-	fmt.Println("アクティブなツール:")
+	terminal.PrintlnBlue("アクティブなツール:")
 	fmt.Println()
 
 	// ツール名でソート
@@ -53,9 +54,9 @@ func runCurrent() error {
 		// プラグイン情報を取得して表示名を使う
 		p, err := registry.Get(tool)
 		if err == nil {
-			fmt.Printf("  %s: %s\n", p.DisplayName, version)
+			fmt.Printf("  %s: %s\n", p.DisplayName, terminal.Green(version))
 		} else {
-			fmt.Printf("  %s: %s\n", tool, version)
+			fmt.Printf("  %s: %s\n", tool, terminal.Green(version))
 		}
 	}
 

@@ -4,6 +4,7 @@ import (
 	"archive/tar"
 	"archive/zip"
 	"compress/gzip"
+	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
@@ -11,9 +12,12 @@ import (
 	"path/filepath"
 	"sort"
 	"strings"
+	"sync"
+	"time"
 
 	"github.com/arsenal/internal/config"
 	"github.com/arsenal/internal/plugin"
+	"github.com/arsenal/internal/terminal"
 )
 
 // バージョンのインストールと切り替えを処理する
@@ -51,7 +55,7 @@ func (m *Manager) Install(toolName, version string) error {
 
 	// ダウンロード URL を解決
 	url := p.ResolveDownloadURL(version)
-	fmt.Printf("📦 %s %s をダウンロード中...\n", p.DisplayName, version)
+	terminal.PrintInfo("%s %s をダウンロード中...", p.DisplayName, version)
 	fmt.Printf("   %s\n", url)
 
 	// ダウンロード
@@ -63,7 +67,7 @@ func (m *Manager) Install(toolName, version string) error {
 	defer func() { _ = os.Remove(tmpFile) }()
 
 	// 展開
-	fmt.Printf("📂 展開中...\n")
+	terminal.PrintlnBlue("📂 展開中...")
 	archiveType := p.ResolveArchiveType()
 	if err := m.extract(tmpFile, installDir, archiveType); err != nil {
 		_ = os.RemoveAll(installDir)
@@ -72,14 +76,14 @@ func (m *Manager) Install(toolName, version string) error {
 
 	// インストール後コマンドを実行
 	if len(p.PostInstall) > 0 {
-		fmt.Printf("🔧 インストール後処理を実行中...\n")
+		terminal.PrintlnCyan("🔧 インストール後処理を実行中...")
 		if err := m.runPostInstall(p, installDir); err != nil {
 			_ = os.RemoveAll(installDir)
 			return fmt.Errorf("インストール後処理エラー: %w", err)
 		}
 	}
 
-	fmt.Printf("✅ %s %s のインストールが完了しました\n", p.DisplayName, version)
+	terminal.PrintSuccess("%s %s のインストールが完了しました", p.DisplayName, version)
 	return nil
 }
 
@@ -107,7 +111,7 @@ func (m *Manager) Use(toolName, version string) error {
 		return fmt.Errorf("symlink 作成エラー: %w", err)
 	}
 
-	fmt.Printf("✅ %s %s に切り替えました\n", p.DisplayName, version)
+	terminal.PrintSuccess("%s %s に切り替えました", p.DisplayName, version)
 	return nil
 }
 
@@ -134,7 +138,7 @@ func (m *Manager) Uninstall(toolName, version string) error {
 		return fmt.Errorf("削除エラー: %w", err)
 	}
 
-	fmt.Printf("🗑️  %s %s をアンインストールしました\n", p.DisplayName, version)
+	terminal.PrintSuccess("%s %s をアンインストールしました", p.DisplayName, version)
 	return nil
 }
 
@@ -277,12 +281,92 @@ func (m *Manager) download(url string) (string, error) {
 	}
 	defer func() { _ = tmpFile.Close() }()
 
-	if _, err := io.Copy(tmpFile, resp.Body); err != nil {
-		_ = os.Remove(tmpFile.Name())
-		return "", err
+	// Content-Length から総ファイルサイズを取得
+	totalSize := resp.ContentLength
+
+	// プログレスバー付きでダウンロード
+	if totalSize > 0 {
+		pw := &progressWriter{
+			total:     totalSize,
+			startTime: time.Now(),
+		}
+		reader := io.TeeReader(resp.Body, pw)
+
+		// 進捗表示用のゴルーチン
+		done := make(chan bool)
+		go func() {
+			ticker := time.NewTicker(100 * time.Millisecond)
+			defer ticker.Stop()
+			for {
+				select {
+				case <-done:
+					return
+				case <-ticker.C:
+					pw.printProgress()
+				}
+			}
+		}()
+
+		if _, err := io.Copy(tmpFile, reader); err != nil {
+			done <- true
+			_ = os.Remove(tmpFile.Name())
+			return "", err
+		}
+
+		done <- true
+		pw.printComplete()
+	} else {
+		// Content-Length がない場合は通常のコピー
+		if _, err := io.Copy(tmpFile, resp.Body); err != nil {
+			_ = os.Remove(tmpFile.Name())
+			return "", err
+		}
 	}
 
 	return tmpFile.Name(), nil
+}
+
+// プログレスバー用のライター
+type progressWriter struct {
+	total     int64
+	current   int64
+	startTime time.Time
+	mu        sync.Mutex
+}
+
+func (pw *progressWriter) Write(p []byte) (int, error) {
+	n := len(p)
+	pw.mu.Lock()
+	pw.current += int64(n)
+	pw.mu.Unlock()
+	return n, nil
+}
+
+func (pw *progressWriter) printProgress() {
+	pw.mu.Lock()
+	current := pw.current
+	total := pw.total
+	pw.mu.Unlock()
+
+	if total <= 0 {
+		return
+	}
+
+	percent := float64(current) / float64(total) * 100
+	currentMB := float64(current) / (1024 * 1024)
+	totalMB := float64(total) / (1024 * 1024)
+
+	// 同じ行を上書き
+	fmt.Printf("\r   \x1b[36mダウンロード中... %.1f MB / %.1f MB (%.0f%%)\x1b[0m", currentMB, totalMB, percent)
+}
+
+func (pw *progressWriter) printComplete() {
+	pw.mu.Lock()
+	total := pw.total
+	pw.mu.Unlock()
+
+	totalMB := float64(total) / (1024 * 1024)
+	fmt.Printf("\r   \x1b[32mダウンロード完了 (%.1f MB)\x1b[0m\n", totalMB)
 }
 
 // アーカイブを対象ディレクトリに展開する
@@ -420,6 +504,77 @@ func (m *Manager) extractZip(archivePath, targetDir string) error {
 func (m *Manager) runPostInstall(p *plugin.Plugin, installDir string) error {
 	// TODO: インストール後コマンド実行を実装
 	// os/exec を使ってインストールディレクトリでコマンドを実行
-	fmt.Printf("   ⚠️  インストール後コマンドはまだ実装されていません\n")
+	terminal.PrintWarning("インストール後コマンドはまだ実装されていません")
 	return nil
+}
+
+// リモートバージョン情報を表す
+type RemoteVersion struct {
+	Version string
+	LTS     string // "" または LTS コードネーム（"Krypton" など）
+}
+
+// リモートから利用可能なバージョン一覧を取得する
+func (m *Manager) ListRemote(toolName string, limit int) ([]RemoteVersion, error) {
+	p, err := m.registry.Get(toolName)
+	if err != nil {
+		return nil, err
+	}
+
+	if p.ListURL == "" {
+		return nil, fmt.Errorf("%s は ls-remote に対応していません", toolName)
+	}
+
+	// リモートから取得
+	resp, err := http.Get(p.ListURL)
+	if err != nil {
+		return nil, fmt.Errorf("リモート取得エラー: %w", err)
+	}
+	defer func() { _ = resp.Body.Close() }()
+
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("HTTP %d: %s", resp.StatusCode, resp.Status)
+	}
+
+	// JSON フォーマットをパース
+	if p.ListFormat != "json" {
+		return nil, fmt.Errorf("サポートされていないフォーマット: %s (現在は json のみ対応)", p.ListFormat)
+	}
+
+	var data []map[string]interface{}
+	if err := json.NewDecoder(resp.Body).Decode(&data); err != nil {
+		return nil, fmt.Errorf("JSON パースエラー: %w", err)
+	}
+
+	// バージョンを抽出
+	versions := make([]RemoteVersion, 0, len(data))
+	for _, item := range data {
+		if ver, ok := item["version"].(string); ok {
+			// version_prefix を削除
+			if p.VersionPrefix != "" && strings.HasPrefix(ver, p.VersionPrefix) {
+				ver = strings.TrimPrefix(ver, p.VersionPrefix)
+			}
+
+			// LTS 情報を取得
+			lts := ""
+			if ltsVal, ok := item["lts"]; ok {
+				// lts は false または文字列（コードネーム）
+				if ltsStr, ok := ltsVal.(string); ok {
+					lts = ltsStr
+				}
+			}
+
+			versions = append(versions, RemoteVersion{
+				Version: ver,
+				LTS:     lts,
+			})
+		}
+	}
+
+	// 件数制限
+	if limit > 0 && len(versions) > limit {
+		versions = versions[:limit]
+	}
+
+	return versions, nil
 }

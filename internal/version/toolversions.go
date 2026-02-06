@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	"github.com/arsenal/internal/config"
+	"github.com/arsenal/internal/terminal"
 )
 
 // .toolversions ファイルの内容を表す
@@ -56,31 +57,33 @@ func (m *Manager) Sync(dir string) error {
 		return fmt.Errorf(".toolversions 読み込みエラー: %w", err)
 	}
 
-	fmt.Printf("📋 %s から同期中\n", path)
+	terminal.PrintInfo("%s から同期中", path)
 
 	for tool, version := range tv.Tools {
-		fmt.Printf("\n── %s %s ──\n", tool, version)
+		fmt.Println()
+		terminal.PrintfCyan("── %s %s ──\n", tool, version)
 
 		// インストール済みか確認
 		versionDir := m.paths.ToolVersionPath(tool, version)
 		if _, err := os.Stat(versionDir); os.IsNotExist(err) {
 			// インストール
 			if err := m.Install(tool, version); err != nil {
-				fmt.Printf("⚠️  %s %s のインストールに失敗: %v\n", tool, version, err)
+				terminal.PrintWarning("%s %s のインストールに失敗: %v", tool, version, err)
 				continue
 			}
 		} else {
-			fmt.Printf("   既にインストール済み\n")
+			terminal.PrintlnYellow("   既にインストール済み")
 		}
 
 		// このバージョンに切り替え
 		if err := m.Use(tool, version); err != nil {
-			fmt.Printf("⚠️  %s を %s に切り替えるのに失敗: %v\n", tool, version, err)
+			terminal.PrintWarning("%s を %s に切り替えるのに失敗: %v", tool, version, err)
 			continue
 		}
 	}
 
-	fmt.Printf("\n✅ 同期完了\n")
+	fmt.Println()
+	terminal.PrintSuccess("同期完了")
 	return nil
 }
 
