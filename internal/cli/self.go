@@ -20,11 +20,10 @@ import (
 const (
 	githubRepo    = "t-ishitsuka/bastion-arsenal"
 	githubAPIBase = "https://api.github.com"
-	githubRawBase = "https://github.com"
 )
 
 var (
-	checkOnly bool
+	checkOnly   bool
 	forceUpdate bool
 )
 
@@ -62,7 +61,7 @@ func newSelfCmd() *cobra.Command {
 	return selfCmd
 }
 
-func runSelfUpdate(cmd *cobra.Command, args []string) error {
+func runSelfUpdate(cmd *cobra.Command, _ []string) error {
 	terminal.PrintInfo("更新をチェック中...")
 
 	// Get current version
@@ -237,23 +236,17 @@ func downloadFile(url, filepath string) error {
 }
 
 func extractArchive(archivePath, destDir string) (string, error) {
-	// Determine binary name based on platform
-	binaryName := "bastion-arsenal"
-	if runtime.GOOS == "windows" {
-		binaryName += ".exe"
-	}
-
 	// Extract based on archive type
 	if strings.HasSuffix(archivePath, ".tar.gz") {
-		return extractTarGz(archivePath, destDir, binaryName)
+		return extractTarGz(archivePath, destDir)
 	} else if strings.HasSuffix(archivePath, ".zip") {
-		return extractZip(archivePath, destDir, binaryName)
+		return extractZip(archivePath, destDir)
 	}
 
 	return "", fmt.Errorf("サポートされていないアーカイブ形式: %s", archivePath)
 }
 
-func extractTarGz(archivePath, destDir, binaryName string) (string, error) {
+func extractTarGz(archivePath, destDir string) (string, error) {
 	// Use tar command to extract
 	// The archive contains a binary with platform-specific name like "bastion-arsenal-linux-amd64"
 	tmpExtractDir := filepath.Join(destDir, "extract")
@@ -306,7 +299,7 @@ func extractTarGz(archivePath, destDir, binaryName string) (string, error) {
 	return "", fmt.Errorf("アーカイブ内にバイナリが見つかりません")
 }
 
-func extractZip(archivePath, destDir, binaryName string) (string, error) {
+func extractZip(archivePath, destDir string) (string, error) {
 	r, err := zip.OpenReader(archivePath)
 	if err != nil {
 		return "", err
