@@ -105,7 +105,7 @@ func NewRootCmd() *cobra.Command {
 		newListCmd(),
 		newCurrentCmd(),
 		// newSyncCmd(),
-		// newDoctorCmd(),
+		newDoctorCmd(),
 		newPluginCmd(),
 		// newInitShellCmd(),
 	)

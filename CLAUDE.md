@@ -5,6 +5,29 @@
 
 ---
 
+## 重要なルール
+
+### 1. ドキュメントファイルでの絵文字禁止
+
+**ドキュメントファイル（.md）には絵文字を一切使用しない**
+- CLAUDE.md, README.md, docs/ 配下の全ファイルで絵文字禁止
+- ターミナル出力（CLI実行時の表示）のみ絵文字使用可
+- 理由: ドキュメントでの絵文字は好まれない
+- 違反例: ✅, ❌, 🔧, 📦 など全ての絵文字
+- 正しい表記: [実装済み], (未実装), ※注意 など
+
+### 2. 実装とドキュメントの同期
+
+**コード変更時は必ず関連ドキュメントを同時更新する**
+- 新機能実装 → README.md, CLAUDE.md の「実装済み」「CLI コマンド一覧」を更新
+- コマンド追加 → 使用例、コマンド一覧表を更新
+- 仕様変更 → 該当する docs/ 配下のファイルを更新
+- 実装状況が変わったら即座にドキュメント反映（後回しにしない）
+
+対象ドキュメント: CLAUDE.md, README.md, docs/ 配下の全ファイル
+
+---
+
 ## プロジェクト概要
 
 **Arsenal（アーセナル）** は軽量マルチランタイムバージョンマネージャー。
@@ -86,6 +109,13 @@ bastion init
 #### エントリポイント
 - `cmd/arsenal/main.go` - メイン関数実装済み
 
+#### CLI コマンド (internal/cli/)
+実装済み:
+- `plugin.go` - arsenal plugin list コマンド [実装済み]
+- `current.go` - arsenal current コマンド [実装済み]
+- `list.go` - arsenal ls コマンド [実装済み]
+- `doctor.go` - arsenal doctor コマンド [実装済み]
+
 ### 未実装
 
 #### CLI コマンド (internal/cli/)
@@ -93,11 +123,7 @@ bastion init
 - `install.go` - arsenal install コマンド
 - `use.go` - arsenal use コマンド
 - `uninstall.go` - arsenal uninstall コマンド
-- `list.go` - arsenal ls コマンド
-- `current.go` - arsenal current コマンド
 - `sync.go` - arsenal sync コマンド
-- `doctor.go` - arsenal doctor コマンド
-- `plugin.go` - arsenal plugin list コマンド
 - `initshell.go` - arsenal init-shell コマンド
 
 #### プラグイン定義 (internal/plugin/builtin/)
@@ -125,6 +151,13 @@ bastion init
 
 詳細は [architecture.md](docs/architecture.md) と [design-principles.md](docs/design-principles.md) を参照。
 
+### テスト・CI/CD
+
+- **テストカバレッジ**: 全体 35%+ (CLI: 65.9%, config: 84.6%, plugin: 66.1%)
+- **GitHub Actions**: PR/push 時に自動テスト・lint・ビルド実行
+- **golangci-lint**: errcheck, staticcheck, unused など標準リンター有効化
+- **カバレッジ目標**: 最低 25%、目標 50%
+
 ### CLI コマンド一覧
 
 | コマンド | 説明 | 状態 |
@@ -133,11 +166,11 @@ bastion init
 | `arsenal use <tool> <version>` | バージョン切り替え (symlink) | [ロジック実装済み] CLI未実装 |
 | `arsenal use <tool> <version> --local` | 切り替え + .toolversions に書き込み | 未実装 |
 | `arsenal uninstall <tool> <version>` | バージョン削除 | [ロジック実装済み] CLI未実装 |
-| `arsenal ls <tool>` | インストール済みバージョン一覧 | [ロジック実装済み] CLI未実装 |
-| `arsenal current` | 全ツールのアクティブバージョン表示 | [ロジック実装済み] CLI未実装 |
+| `arsenal ls <tool>` | インストール済みバージョン一覧 | [実装済み] |
+| `arsenal current` | 全ツールのアクティブバージョン表示 | [実装済み] |
 | `arsenal sync` | .toolversions から一括セットアップ | [ロジック実装済み] CLI未実装 |
-| `arsenal doctor` | 環境ヘルスチェック | [ロジック実装済み] CLI未実装 |
-| `arsenal plugin list` | 対応ツール一覧 | [ロジック実装済み] CLI未実装 |
+| `arsenal doctor` | 環境ヘルスチェック | [実装済み] |
+| `arsenal plugin list` | 対応ツール一覧 | [実装済み] |
 | `arsenal init-shell [bash\|zsh\|fish]` | シェル設定スクリプト出力 | 未実装 |
 | `arsenal ls-remote <tool>` | リモートの利用可能バージョン取得 | 未実装 |
 
@@ -157,9 +190,10 @@ bastion init
 
 ### 優先度高
 
-1. **CLI コマンドファイル実装** - install.go, use.go など
+1. **残りの CLI コマンドファイル実装** - install.go, use.go, uninstall.go, sync.go, initshell.go
    - 既存の Manager メソッドを呼び出すだけ
    - Cobra のフラグ定義とバリデーション
+   - 各コマンドのテスト実装
 
 2. **`ls-remote` コマンド** - リモートの利用可能バージョン一覧取得
    - node: `https://nodejs.org/dist/index.json` を GET して version 一覧

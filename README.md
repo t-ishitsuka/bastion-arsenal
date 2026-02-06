@@ -6,18 +6,21 @@
 
 ## 現在の状態
 
-**開発中** - コアロジック実装済み、CLI コマンド実装中。
+**開発中** - コアロジック実装済み、基本的な CLI コマンド実装済み。
 
 ### 実装済み
 - コアバージョン管理ロジック (install/use/uninstall/list/current/sync/doctor)
+- CLI コマンド: `plugin list`, `current`, `ls`, `doctor`
 - go:embed を使ったプラグインシステム
 - .toolversions パーサー
 - Node.js プラグイン定義 (node.toml)
 - パス管理とディレクトリ構造
 - symlink ベースのバージョン切り替え
+- GitHub Actions による自動テスト・lint・ビルド
+- テストカバレッジ: 35%+ (CLI: 65.9%)
 
 ### TODO
-- CLI コマンド実装 (install.go, use.go など)
+- CLI コマンド実装 (install.go, use.go, uninstall.go, sync.go, initshell.go)
 - 追加プラグイン定義 (go.toml, python.toml, rust.toml, php.toml)
 - シェル統合 (init-shell コマンド)
 - リモートバージョン一覧 (ls-remote コマンド)
@@ -36,7 +39,25 @@ go install github.com/arsenal/cmd/arsenal@latest
 eval "$(arsenal init-shell zsh)"
 ```
 
-## 使用方法（予定）
+## 使用方法
+
+### 実装済みコマンド
+
+```bash
+# 環境ヘルスチェック
+arsenal doctor
+
+# 利用可能なツール一覧
+arsenal plugin list
+
+# アクティブバージョンを表示
+arsenal current
+
+# インストール済みバージョン一覧
+arsenal ls node
+```
+
+### 未実装（実装予定）
 
 ```bash
 # ツールのバージョンをインストール
@@ -47,20 +68,11 @@ arsenal install go 1.22.0
 arsenal use node 20.10.0
 arsenal use go 1.22.0 --local   # .toolversions に書き込み
 
-# インストール済みバージョン一覧
-arsenal ls node
-
-# アクティブバージョンを表示
-arsenal current
+# バージョンをアンインストール
+arsenal uninstall node 18.0.0
 
 # .toolversions から同期
 arsenal sync
-
-# 環境ヘルスチェック
-arsenal doctor
-
-# 利用可能なツール一覧
-arsenal plugin list
 ```
 
 ## .toolversions フォーマット
